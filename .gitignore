@@ -1,0 +1,13 @@
+Cache/
+cache/
+
+*.log
+*.tmp
+
+dconf/
+pulse/
+ibus/
+pamac/
+
+.config/hypr/scripts/weather.sh
+hypr/scripts/weather.sh
