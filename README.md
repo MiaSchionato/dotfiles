@@ -29,13 +29,10 @@ Editor	Neovim
 
 
 Installation
-
-Feel free to adapt this process for your own needs. This is how I deploy my configurations on a new system.
-
-    Warning: The following commands will replace your existing .config directory. Please back it up first.
+installation script still in progress, you can mannually install with git clone and replace your .config file.
 
 
-
+---
 Acknowledgment
 
 This setup is a constant work in progress. Feel free to open an issue if you have any questions or suggestions. I'm always learning and happy to share ideas.
