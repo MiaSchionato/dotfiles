@@ -25,6 +25,6 @@ function fish_prompt --description 'Write out the prompt'
                 set prompt_status $status_color "[" $last_status "]" $normal
         end
     
-        echo -s $status_color (whoami) ' ' $cwd_color (prompt_pwd) $vcs_color (fish_vcs_prompt) $normal ' ' $prompt_status
+        echo -s $status_color (whoami)'-'$status_color (uname -n) " "  $cwd_color (prompt_pwd) $vcs_color (fish_vcs_prompt) $normal ' ' $prompt_status
         echo -n -s $status_color $suffix ' ' $normal
 end
