@@ -19,3 +19,4 @@ set -x EDITOR 'vim'
 set -x XCURSOR_PATH "$XCURSOR_PATH:~/.icons:~/.local/share/icons"
 set -x LIBVIRT_DEFAULT_URI "qemu:///system"
 set -x QT_QPA_PLATFORM "xcb"
+set -gx LC_ALL "en_US.UTF-8"
