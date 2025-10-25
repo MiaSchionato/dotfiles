@@ -1,0 +1,6 @@
+[Libinput][1102][4618][DELL081B:00 044E:120A Touchpad]
+NaturalScroll=true
+
+[Mouse]
+cursorSize=32
+cursorTheme=Moga-Neon-Blue
