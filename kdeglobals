@@ -144,6 +144,9 @@ Theme=Tela-circle-blue-dark
 [KDE]
 LookAndFeelPackage=org.kde.breezedark.desktop
 
+[Locale]
+BinaryUnitDialect=1
+
 [WM]
 activeBackground=26,27,38
 activeBlend=215,218,224

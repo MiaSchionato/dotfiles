@@ -10,4 +10,5 @@ cache/
 session/
 dconf/
 pulse/
-KDE/ # Geralmente contém caches e dados que não são de configuração
+KDE/ 
+

@@ -3,7 +3,7 @@ end
 
 # Inicia o ssh-agent via keychain, mas apenas se não estiver em execução
 if not set -q SSH_AUTH_SOCK
-    keychain --quiet --eval id_ed25519_sk | while read -l line
+    keychain --quiet --eval id_ed25519 | while read -l line
         if string match -q "SSH_AUTH_SOCK=*" $line
             set -gx SSH_AUTH_SOCK (echo $line | sed 's/SSH_AUTH_SOCK=\(.*\);.*/\1/')
         else if string match -q "SSH_AGENT_PID=*" $line
