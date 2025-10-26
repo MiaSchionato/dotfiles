@@ -5,38 +5,54 @@
     "width": 600,
     "height": 40,
     "exclusive": false,
-    "modules-left": ["custom/launcher", "wlr/workspaces", "custom/filemanager", "custom/browser", "custom/systemsettings", "custom/discover"],
+    "modules-left": ["custom/launcher", "wlr/workspaces", "custom/filemanager", "custom/browser", "custom/systemsettings", "custom/home"],
     "modules-center": ["clock"],
-    "modules-right": ["tray", "battery", "network", "clock#calendar", "custom/show-desktop"],
+    "modules-right": ["pulseaudio", "pulseaudio#mic", "tray", "battery", "network", "clock#calendar", "custom/show-desktop"],
+
+    "pulseaudio#mic": {
+        "format": "",
+        "format-muted": "",
+        "tooltip": true,
+        "tooltip-format": "{volume}%",
+        "on-click": "pactl set-source-mute @DEFAULT_SOURCE@ toggle",
+        "on-click-right": "pavucontrol"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}",
+        "tooltip": true,
+        "tooltip-format": "{volume}%",
+        "format-muted": "",
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "pavucontrol",
+        "format-icons": {
+            "default": ["", "", ""]
+        }
+    },
 
     "custom/launcher": {
-        "format": "🚀",
+        "format": "",
         "on-click": "rofi -show drun",
         "tooltip": false
     },
-    "wlr/workspaces": {
-        "disable-scroll": true,
-        "all-outputs": true,
-        "on-click": "activate"
-    },
     "custom/filemanager": {
-        "format": "📁",
+        "format": "",
         "on-click": "foot -e yazi",
         "tooltip": false
     },
     "custom/browser": {
-        "format": "🌐",
+        "format": "",
         "on-click": "firefox",
         "tooltip": false
     },
     "custom/systemsettings": {
-        "format": "⚙️",
-        "on-click": "systemsettings",
+        "format": "",
+        "on-click": "foot btop",
         "tooltip": false
     },
-    "custom/discover": {
-        "format": "📦",
-        "on-click": "plasma-discover",
+    "custom/home": {
+        "format": "",
+        "on-click": "sh -c /home/miguel/.config/hypr/scripts/show_desktop.sh",
         "tooltip": false
     },
     "tray": {
@@ -48,18 +64,19 @@
         "tooltip-format": "{essid}&#10;{ifname}: {ipaddr}/{cidr}&#10;{gwaddr}"
     },
     "battery": {
+        "icon-size": 36,
+        "padding-right": 5,
         "battery": "BAT0",
-        "format": "[BAT]",
-        "format-charging": "⚡",
-        "format-discharging": "🔋",
-        "format-full": "✅",
-        "format-alt": "{time}",
+        "format": "{icon}",
+        "format-charging": "󰂄",
+        "format-full": "󰁹",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰂃"],
         "states": {
             "good": 90,
             "warning": 30,
             "critical": 15
         },
-        "tooltip-format": "{capacity}%",
+        "tooltip-format": "{time}{capacity}%",
         "padding-left": 5,
         "padding-right": 5
     },
@@ -69,12 +86,14 @@
         "tooltip": false
     },
     "clock#calendar": {
-        "format": "📅",
+        "format": "󰭦",
+        "icon-size": 24,
         "tooltip-format": "<tt><big><big>{calendar}</big></big></tt>",
         "on-click": "sh -c /usr/bin/gsimplecal"
     },
     "custom/show-desktop": {
         "format": "",
-        "on-click": "hyprctl dispatch togglespecialworkspace"
+        "tooltip": false,
+        "on-click": "foot bash -c 'fastfetch; exec bash' &"
     }
 }

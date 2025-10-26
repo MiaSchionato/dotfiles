@@ -31,24 +31,27 @@ window#waybar {
     border-bottom: 2px solid #ffffff;
 }
 
-#clock,
+#clock {
+  font-size: 24px;
+}
 #tray,
 #custom-launcher,
 #custom-filemanager,
 #custom-browser,
 #custom-systemsettings,
-#custom-discover,
+#custom-home,
 #custom-show-desktop {
+    font-size: 36px;
     padding: 0 7px;
     margin: 5px 0px;
 }
 
-#network, #show-desktop {
-    font-size: 36px;
-    padding: 0 2px;
+#pulseaudio, #pulseaudio#mic {
+  font-size: 36px;
+  padding: 0 2px;
 }
 
-#clock#calendar {
-    font-size: 104px; /* Increased specifically for calendar */
-    padding: 0 2px;
+#network, #show-desktop, #clock#calendar {
+    font-size: 36px;
+    padding: 0 7px;
 }

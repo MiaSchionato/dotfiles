@@ -1,4 +1,3 @@
-# Ignorar arquivos de cache, logs e temporários
 *.cache
 *.kcache
 *.log
@@ -6,10 +5,12 @@
 Cache/
 cache/
 
-# Ignorar diretórios com estado de sessão ou específicos da máquina
 session/
 dconf/
 pulse/
 KDE/ 
 obsidian/
+btop/
+konsole*
+pavucontrol*
 
