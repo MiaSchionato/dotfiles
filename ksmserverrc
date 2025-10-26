@@ -1,0 +1,10 @@
+[LegacySession: saved at previous logout]
+count=0
+
+[Session: saved at previous logout]
+clientId1=10c3e1d2d3000176142370600000046420004
+count=1
+program1=/usr/lib/DiscoverNotifier
+restartCommand1=/usr/lib/DiscoverNotifier,-session,10c3e1d2d3000176142370600000046420004_1761423768_206436
+restartStyleHint1=0
+userId1=miguel

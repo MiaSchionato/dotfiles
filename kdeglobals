@@ -133,8 +133,7 @@ ForegroundPositive=179,225,163
 ForegroundVisited=173,142,230
 
 [General]
-ColorScheme=TokyoNight
-ColorSchemeHash=9f63c7711a13123582e720791ea0f8c0172977d2
+ColorSchemeHash=b97562e9308a74623cceab30d237ce2d67fb72a8
 TerminalApplication=foot
 TerminalService=foot.desktop
 
@@ -143,9 +142,6 @@ Theme=Tela-circle-blue-dark
 
 [KDE]
 LookAndFeelPackage=org.kde.breezedark.desktop
-
-[Locale]
-BinaryUnitDialect=1
 
 [WM]
 activeBackground=26,27,38

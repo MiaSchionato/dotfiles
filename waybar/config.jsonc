@@ -1,0 +1,80 @@
+{
+    "layer": "top",
+    "position": "bottom",
+    "margin-bottom": 10,
+    "width": 600,
+    "height": 40,
+    "exclusive": false,
+    "modules-left": ["custom/launcher", "wlr/workspaces", "custom/filemanager", "custom/browser", "custom/systemsettings", "custom/discover"],
+    "modules-center": ["clock"],
+    "modules-right": ["tray", "battery", "network", "clock#calendar", "custom/show-desktop"],
+
+    "custom/launcher": {
+        "format": "🚀",
+        "on-click": "rofi -show drun",
+        "tooltip": false
+    },
+    "wlr/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "on-click": "activate"
+    },
+    "custom/filemanager": {
+        "format": "📁",
+        "on-click": "foot -e yazi",
+        "tooltip": false
+    },
+    "custom/browser": {
+        "format": "🌐",
+        "on-click": "firefox",
+        "tooltip": false
+    },
+    "custom/systemsettings": {
+        "format": "⚙️",
+        "on-click": "systemsettings",
+        "tooltip": false
+    },
+    "custom/discover": {
+        "format": "📦",
+        "on-click": "plasma-discover",
+        "tooltip": false
+    },
+    "tray": {
+        "icon-size": 24,
+        "spacing": 10
+    },
+    "network": {
+        "format": "",
+        "tooltip-format": "{essid}&#10;{ifname}: {ipaddr}/{cidr}&#10;{gwaddr}"
+    },
+    "battery": {
+        "battery": "BAT0",
+        "format": "[BAT]",
+        "format-charging": "⚡",
+        "format-discharging": "🔋",
+        "format-full": "✅",
+        "format-alt": "{time}",
+        "states": {
+            "good": 90,
+            "warning": 30,
+            "critical": 15
+        },
+        "tooltip-format": "{capacity}%",
+        "padding-left": 5,
+        "padding-right": 5
+    },
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip": false
+    },
+    "clock#calendar": {
+        "format": "📅",
+        "tooltip-format": "<tt><big><big>{calendar}</big></big></tt>",
+        "on-click": "sh -c /usr/bin/gsimplecal"
+    },
+    "custom/show-desktop": {
+        "format": "",
+        "on-click": "hyprctl dispatch togglespecialworkspace"
+    }
+}
