@@ -32,7 +32,7 @@
 
     "custom/launcher": {
         "format": "",
-        "on-click": "rofi -show drun",
+        "on-click": "foot -e gemini",
         "tooltip": false
     },
     "custom/filemanager": {
@@ -76,7 +76,7 @@
             "warning": 30,
             "critical": 15
         },
-        "tooltip-format": "{time}{capacity}%",
+        "tooltip-format": "{time} &#10;{capacity}%",
         "padding-left": 5,
         "padding-right": 5
     },
@@ -94,6 +94,6 @@
     "custom/show-desktop": {
         "format": "",
         "tooltip": false,
-        "on-click": "foot bash -c 'fastfetch; exec bash' &"
+        "on-click": "foot fish -c 'fastfetch; exec fish' &"
     }
 }
