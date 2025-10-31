@@ -1,0 +1,39 @@
+[
+    // -- BARRA 1: A SUA BARRA PRINCIPAL (INFERIOR) --
+    {
+        "id": "main-bar", // ID para a barra principal
+        "layer": "top",
+        "position": "bottom",
+        "exclusive": false,
+        
+        "width": 600,
+        "height": 40,
+        "margin-bottom": 10,
+        "style": "~/.config/waybar/style-1080.css",
+
+        // Módulos (REMOVI hyprland/workspaces DAQUI)
+        "modules-left": ["custom/launcher", "custom/filemanager", "custom/browser", "custom/systemsettings", "custom/home"],
+        "modules-center": ["clock"],
+        "modules-right": ["pulseaudio", "pulseaudio#mic", "tray", "battery", "network", "clock#calendar", "custom/show-desktop"],
+
+        "include": [ "~/.config/waybar/modules.jsonc" ]
+    },
+
+    // -- BARRA 2: NOVA BARRA DE WORKSPACES (SUPERIOR) --
+    {
+        "id": "workspace-bar", // ID para a nova barra
+        "layer": "top",
+        "position": "top",
+        "exclusive": false,
+        "height": 30, // Altura um pouco menor
+        "margin-top": 10, // Margem superior
+        "style": "~/.config/waybar/style-1080.css", // Reutiliza seu estilo
+
+        // Módulos (SOMENTE WORKSPACES NO CENTRO)
+        "modules-left": [],
+        "modules-center": ["hyprland/workspaces"],
+        "modules-right": [],
+
+        "include": [ "~/.config/waybar/modules.jsonc" ]
+    }
+]

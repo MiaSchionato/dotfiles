@@ -30,4 +30,5 @@ else
 fi
 
 # Launch Waybar
-waybar
+waybar -b main-bar &
+waybar -b workspace-bar &

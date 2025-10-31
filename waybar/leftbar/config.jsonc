@@ -4,13 +4,13 @@
 // sourced from header module //
 
     "layer": "top",
-    "position": "bottom",
+    "position": "left",
     "mod": "dock",
-   "margin-left": 10,
- "margin-right": 10,
- "margin-top": 8,
- "margin-bottom": 12,
-    "exclusive": false,
+   "margin-left": 4,
+ "margin-right": 0,
+ "margin-top": 4,
+ "margin-bottom": 4,
+    "exclusive": true,
     "passthrough": false,
     "gtk-layer-shell": true,
     "reload_style_on_change": true,
@@ -18,18 +18,27 @@
 
 // positions generated based on config.ctl //
 
-	"modules-left": ["custom/smallspacer","hyprland/workspaces","custom/spacer","mpris"],
-	"modules-center": ["custom/padd","custom/l_end","custom/r_end","hyprland/window","custom/padd"],
-	"modules-right": ["custom/padd","custom/l_end","group/expand","network","group/expand-3","group/expand-2","group/expand-4","memory","cpu","clock","custom/notification","custom/padd"],
+	"modules-left": ["custom/spacer","hyprland/workspaces","custom/spacer"],
+	"modules-center": ["mpris"],
+	"modules-right": ["group/expand","network","group/expand-3","group/expand-2","clock","upower","custom/notification"],
 
 
 // sourced from modules based on config.ctl //
 
+"custom/led": {
+    "format": "<span color='#AFAFAF'>󰍿</span><span color='#AFAFAF'> </span> ",
+    "format-alt": "󰍿<span color='#83A1F6'> </span> ",
+    "on-click": "~/mouse.sh",
+    "rotate": 90,
+    "tooltip": false,
+},
+
 "upower": {
      "icon-size": 20,
       "format": "",
-     "format-alt": "{}<span color='orange'>[{time}]</span>",
+     "on-click": "/home/anik/battery.sh",
      "tooltip": true,
+     "rotate": 0,
      "tooltip-spacing": 20,
       "on-click-right": "pkill waybar & hyprctl dispatch exec waybar"
 },
@@ -54,6 +63,7 @@
 
 "custom/smallspacer":{
 "format": " ",
+"rotate": 0,
 },
 "memory": {
     "interval": 1,
@@ -71,15 +81,18 @@
 
 
 "mpris": {
-	"format": "{player_icon} {dynamic}",
-	"format-paused": "<span color='grey'>{status_icon} {dynamic}</span>",
-	"max-length": 30,
+	"format": "󰝚 {player_icon}"
+//"format": "<span color='#1E90D7'> </span> {player_icon} <b>{dynamic}</b>",
+	"rotate": 90,
+	"format-paused": "<span color='#2d2d2e'>󰝚 {status_icon}</span>",
+//"format-paused": "<span color='#254B61'> </span> <span color='#2d2d2e'>{status_icon} <b>{dynamic}</b></span>",
+	"max-length": 6,
 	"player-icons": {
-		"default": "⏸",
-		"mpv": "🎵"
+		"default": "󰏤",
+		"mpv": "󰝚"
 	},
 	"status-icons": {
-		"paused": "▶" 
+		"paused": "󰐊" 
 	},
 	// "ignored-players": ["firefox"]
 },
@@ -90,7 +103,7 @@
     },
 
    "group/expand": {
-     "orientation": "horizontal",
+     "orientation": "vertical",
      "drawer": {
          "transition-duration": 600,
          "children-class": "not-power",
@@ -102,22 +115,23 @@
 
  "custom/menu":{
  "format": "󰅃",
- "rotate": 90,
+ "rotate": 0,
  },
  
 
 "custom/notification": {
     "tooltip": false,
+    "rotate": 0,
     "format": "{icon}",
     "format-icons": {
-      "notification": "󰅸",
-      "none": "󰂜",
-      "dnd-notification": "󰅸",
-      "dnd-none": "󱏨",
-      "inhibited-notification": "󰅸",
-      "inhibited-none": "󰂜",
-      "dnd-inhibited-notification": "󰅸",
-      "dnd-inhibited-none": "󱏨"
+      "notification": "󱅫",
+      "none": "󰂚",
+      "dnd-notification": "󱅫",
+      "dnd-none": "󰂚",
+      "inhibited-notification": "󱅫",
+      "inhibited-none": "󰂚",
+      "dnd-inhibited-notification": "󱅫",
+      "dnd-inhibited-none": "󰂚"
     },
     "return-type": "json",
     "exec-if": "which swaync-client",
@@ -130,6 +144,8 @@
   "hyprland/window": {  
 //"format": "{}"   // <--- these is the default value  
 "format": "<span  weight='bold' >{class}</span>",
+"on-click-right": "pkill waybar & hyprctl dispatch exec waybar",
+"rotate": 90,
  "max-length": 120,
  "icon": false,
  "icon-size": 13,
@@ -144,7 +160,8 @@
     },
     
     "custom/spacer":{
-    "format": "|"
+    "format": "|",
+    "rotate": 90,
     },
     
 
@@ -155,9 +172,9 @@
 	"format": "{icon}",
 	"format-icons": {
 	"default": "",
-	"active": "",
+	"active": "",
 	//"default": "○",
-	//"default": "●"
+	//"active": "⦿"
 	},
 },
 
@@ -256,7 +273,7 @@
 
 	"wlr/taskbar": {
 		"format": "{icon}",
-		"rotate": 0,
+		"rotate": 90,
 		"icon-size": 18,
 		"icon-theme": "Tela-circle-dracula",
         "spacing": 0,
@@ -296,7 +313,8 @@
     },
 
     "clock": {
-        "format": "{:%I:%M %p}",
+        "format": "{:%I\n%M\n%S}",
+        "interval": 1,
         "rotate": 0,
        "on-click": "/usr/local/bin/ags -t ActivityCenter",
         "tooltip-format": "<tt>{calendar}</tt>",
@@ -319,7 +337,6 @@
             "on-scroll-down": "shift_down"
         }
     },
-
 
     "battery": {
         "states": {
@@ -345,23 +362,24 @@
         "rotate": 0,
         "format": "{icon}",
         "format-icons": ["󰃞", "󰃝", "󰃟", "󰃠"],
-        "scroll-step": 1,
+       "on-scroll-up": "brightnessctl set +5%",
+       "on-scroll-down": "brightnessctl s 5%-",
         "min-length": 2
     },
     
      "group/expand-2": {
-     "orientation": "horizontal",
+     "orientation": "vertical",
      "drawer": {
          "transition-duration": 600,
          "children-class": "not-power",
        "transition-to-left": true,
          "click-to-reveal": true
      },
-     "modules": ["backlight","backlight/slider"]
+     "modules": ["backlight","backlight/slider","custom/led"]
    },
    
     "group/expand-3": {
-     "orientation": "horizontal",
+     "orientation": "vertical",
      "drawer": {
          "transition-duration": 600,
          "children-class": "not-power",
@@ -380,7 +398,7 @@
         "format-ethernet": "󰈀 ",
         "tooltip-format": "Network: <big><b>{essid}</b></big>\nSignal strength: <b>{signaldBm}dBm ({signalStrength}%)</b>\nFrequency: <b>{frequency}MHz</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>",
         "format-linked": "󰈀 {ifname} (No IP)",
-        "format-disconnected": " ",
+        "format-disconnected": "",
         "tooltip-format-disconnected": "Disconnected",
         "on-click": "/usr/local/bin/ags -t ControlPanel",
         "interval": 2,
@@ -388,6 +406,7 @@
 
     "pulseaudio": {
         "format": "{icon}",
+      //  "on-click-middle": "eww open audio_menu --toggle --config ~/.config/eww/aud_men/",
         "rotate": 0,
         "format-muted": "婢",
         "tooltip-format": "{icon} {desc} // {volume}%",
@@ -507,6 +526,7 @@
     "rotate": 0,
     "device": "intel_backlight",
     "scroll-step": 1,
+    "orientation": "vertical",
   },
   
   "pulseaudio/slider": {
@@ -515,5 +535,6 @@
     "rotate": 0,
     "device": "pulseaudio",
     "scroll-step": 1,
+     "orientation": "vertical",
   },
 }
