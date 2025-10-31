@@ -4,16 +4,17 @@
 // sourced from header module //
 
     "layer": "top",
-    "position": "bottom",
+    "position": "top",
     "mod": "dock",
    "margin-left": 10,
  "margin-right": 10,
- "margin-top": 8,
- "margin-bottom": 12,
-    "exclusive": false,
+ "margin-top": 0,
+ "margin-bottom": 0,
+    "exclusive": true,
     "passthrough": false,
     "gtk-layer-shell": true,
     "reload_style_on_change": true,
+
 
 
 // positions generated based on config.ctl //

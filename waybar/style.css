@@ -3,6 +3,7 @@
     /*font-family: "JetBrainsMono Nerd Font";*/
     font-weight: bold; 
     font-size: 15px;
+    background: transparent;
 }
 
 #custom-notification {
@@ -21,7 +22,7 @@ window#waybar {
 /* border: 0px solid #A1BDCE; */
  /*border: 3px solid rgba(255, 255, 255, 0.1);*/
  border: 1px solid #89B4FA;
- border-radius: 10px;
+ border-radius: 100px;
 }
 
 
@@ -30,7 +31,7 @@ tooltip {
         color: #A1BDCE;
         font-size: 13px;
         border-radius: 7px;
-       border: 2px solid #101a24;
+       border: 2px solid #89B4FA;
 
 
     }
