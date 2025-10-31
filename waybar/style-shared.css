@@ -1,0 +1,60 @@
+/* * This file defines 100% of the visual style.
+ * All units are in 'rem' so they can scale based
+ * on the root font-size defined in the specific profiles.
+ */
+* {
+    border: none;
+    font-family: "Noto Sans", sans-serif;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(34, 34, 34, 0.8);
+    color: #ffffff;
+    border-radius: 0.625rem; /* 10px / 16 */
+    margin: 0 0 0.625rem 0; /* 10px / 16 (from config) */
+}
+
+#workspaces {
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.3125rem; /* 5px / 16 */
+    padding: 0px 0.3125rem; /* 5px / 16 */
+    border-radius: 0.625rem; /* 10px / 16 */
+}
+
+#workspaces button {
+    padding: 0 0.125rem; /* 2px / 16 */
+    background: transparent;
+    color: #ffffff;
+    border-bottom: 0.125rem solid transparent; /* 2px / 16 */
+}
+
+#workspaces button.active {
+    border-bottom: 0.125rem solid #ffffff; /* 2px / 16 */
+}
+
+#clock {
+  font-size: 1.5rem; /* 24px / 16 */
+}
+
+#tray,
+#custom-launcher,
+#custom-filemanager,
+#custom-browser,
+#custom-systemsettings,
+#custom-home,
+#custom-show-desktop {
+    font-size: 2.25rem; /* 36px / 16 */
+    padding: 0 0.4375rem; /* 7px / 16 */
+    margin: 0.3125rem 0px; /* 5px / 16 */
+}
+
+#pulseaudio, #pulseaudio#mic {
+  font-size: 2.25rem; /* 36px / 16 */
+  padding: 0 0.125rem; /* 2px / 16 */
+}
+
+#network, #show-desktop, #clock#calendar {
+    font-size: 2.25rem; /* 36px / 16 */
+    padding: 0 0.4375rem; /* 7px / 16 */
+}

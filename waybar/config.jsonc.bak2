@@ -1,0 +1,93 @@
+{
+    "layer": "top",
+    "position": "bottom",
+    "exclusive": false,
+
+    "modules-left": ["custom/launcher", "wlr/workspaces", "custom/filemanager", "custom/browser", "custom/systemsettings", "custom/home"],
+    "modules-center": ["clock"],
+    "modules-right": ["pulseaudio", "pulseaudio#mic", "tray", "battery", "network", "clock#calendar", "custom/show-desktop"],
+
+    "pulseaudio#mic": {
+        "format": "",
+        "format-muted": "",
+        "tooltip": true,
+        "tooltip-format": "{volume}%",
+        "on-click": "pactl set-source-mute @DEFAULT_SOURCE@ toggle", 
+        "on-click-right": "pavucontrol"
+    },
+    "pulseaudio": {
+        "format": "{icon}",
+        "tooltip": true,
+        "tooltip-format": "{volume}%",
+        "format-muted": "",
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "pavucontrol",
+        "format-icons": {
+            "default": ["", "", ""]         }
+    },
+    "custom/launcher": {
+        "format": "",
+        "on-click": "foot -e gemini",
+        "tooltip": false
+    },
+    "custom/filemanager": {
+        "format": "",
+        "on-click": "foot -e yazi",
+        "tooltip": false
+    },
+    "custom/browser": {
+        "format": "",
+        "on-click": "firefox", 
+        "tooltip": false
+    },
+    "custom/systemsettings": {
+        "format": "",
+        "on-click": "foot btop",
+        "tooltip": false
+    },
+    "custom/home": {
+        "format": "",
+        "on-click": "sh -c /home/miguel/.config/hypr/scripts/show_desktop.sh",
+        "tooltip": false 
+    },
+    "tray": {
+        "icon-size": 24,
+        "spacing": 10
+    },
+    "network": {
+        "format": "",
+        "tooltip-format": "{essid}&#10;{ifname}: {ipaddr}/{cidr}&#10;{gwaddr}"
+    },
+    "battery": {
+        "icon-size": 36,
+        "padding-right": 5,
+        "battery": "BAT0",
+        "format": "{icon}", 
+        "format-charging": "󰂄",
+        "format-full": "󰁹",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰂃"],
+        "states": {
+            "good": 90,
+            "warning": 30,
+            "critical": 15
+        },
+        "tooltip-format": "{time} &#10;{capacity}%",
+        "padding-left": 5,
+        "padding-right": 5
+    },
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip": false
+    },
+    "clock#calendar": {
+        "format": "󰭦",
+        "icon-size": 24,
+        "tooltip-format": "<tt><big><big>{calendar}</big></big></tt>",
+        "on-click": "sh -c /usr/bin/gsimplecal" 
+    },
+    "custom/show-desktop": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "foot fish -c 'fastfetch; exec fish' &" 
+    }
+}

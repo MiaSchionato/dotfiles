@@ -1,0 +1,10 @@
+/*
+ * Profile for 1800p (HiDPI)
+ * This sets a larger base font size.
+ * All 'rem' values in style-shared.css will scale accordingly.
+ */
+@import "style-shared.css";
+
+window#waybar {
+    font-size: 24px;
+}

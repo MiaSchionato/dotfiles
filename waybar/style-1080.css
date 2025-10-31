@@ -1,0 +1,9 @@
+/*
+ * Profile for 1080p (FHD)
+ * This sets the base font size, which defines '1rem'.
+ */
+@import "style-shared.css";
+
+window#waybar {
+    font-size: 16px;
+}
