@@ -1,5 +1,6 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
+SETUVAR --export --path GOPATH:/home/miguel/my_devops_journey/Languages/Go
 SETUVAR __fish_initialized:3800
 SETUVAR fish_color_autosuggestion:565f89
 SETUVAR fish_color_cancel:\x1d
@@ -39,3 +40,4 @@ SETUVAR fish_pager_color_selected_background:\x2d\x2dbackground\x3d283457
 SETUVAR fish_pager_color_selected_completion:\x1d
 SETUVAR fish_pager_color_selected_description:\x1d
 SETUVAR fish_pager_color_selected_prefix:\x1d
+SETUVAR fish_user_paths:/home/miguel/\x2elocal/share/mise/installs/node/25\x2e1\x2e0/bin\x1e/home/miguel/my_devops_journey/Languages/Go/bin\x1e/home/miguel/go\x1e/home/miguel/\x2elocal/share/icons

@@ -20,3 +20,6 @@ set -x XCURSOR_PATH "$XCURSOR_PATH:~/.icons:~/.local/share/icons"
 set -x LIBVIRT_DEFAULT_URI "qemu:///system"
 set -x QT_QPA_PLATFORM "xcb"
 set -gx LC_ALL "en_US.UTF-8"
+if not set -q TMUX; and test "$TERM" != "screen"; and set -q HYPRLAND_INSTANCE_SIGNATURE
+    tmux attach || tmux new -s main
+end
