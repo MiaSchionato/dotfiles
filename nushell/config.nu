@@ -141,8 +141,8 @@ def _git_segment [] {
 $env.PROMPT_COMMAND = {||
     let ok    = ($env.LAST_EXIT_CODE == 0)
     let id_c  = if $ok { "#7aa2f7" } else { "#f7768e" }
-    let host  = ($env.COMPUTERNAME? | default (sys host | get hostname) | str lowercase)
-    let id    = $"(ansi { fg: $id_c })($env.USERNAME)-($host)(ansi reset)"
+    let user  = ($env.USERNAME | str lowercase | split row ' ' | first)
+    let id    = $"(ansi { fg: $id_c })($user)(ansi reset)"
     let home  = ($nu.home-dir | str replace --all '\' '/')
     let path  = ($env.PWD | str replace --all '\' '/' | str replace $home "~")
     let cwd   = $"(ansi green_bold)($path)(ansi reset)"
@@ -168,7 +168,12 @@ $env.PROMPT_MULTILINE_INDICATOR = $"(ansi { fg: '#565f89' })::: (ansi reset)"
 $env.EDITOR = "nvim"
 $env.VISUAL = "nvim"
 $env.TERM   = "xterm-256color"
-$env.LC_ALL = "en_US.UTF-8"
+# C.UTF-8 is built into perl/glibc and needs no installed locale files,
+# so Git-for-Windows' perl stops warning while output stays UTF-8.
+$env.LANG   = "C.UTF-8"
+$env.LC_ALL = "C.UTF-8"
+# Last-resort silencer: if some perl still can't set the locale, don't nag.
+$env.PERL_BADLANG = "0"
 $env.BAT_THEME = "tokyonight_night"
 $env.FZF_DEFAULT_OPTS = ([
     "--height=60% --layout=reverse --border --info=inline"
@@ -217,3 +222,9 @@ def "..." [] { cd ../.. }
 # =============================================================================
 # zoxide  (config.fish: `zoxide init fish | source`)  — also overrides `cd`
 source ~/.cache/zoxide.nu
+
+# =============================================================================
+#  carapace  (completion bridge)
+# =============================================================================
+$env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
+source ~/.cache/carapace/init.nu

@@ -9,6 +9,7 @@ local config = wezterm.config_builder()
 -- foot.ini had `shell=fish`; the Windows port of that workflow is Nushell.
 local nu = wezterm.home_dir .. "\\AppData\\Local\\Programs\\nu\\bin\\nu.exe"
 config.default_prog = { nu }
+config.enable_kitty_keyboard = true
 
 -- ---- theme  (foot/themes/tokyonight_night.ini) ----------------------------
 config.color_scheme = "Tokyo Night"
