@@ -9,7 +9,16 @@ local config = wezterm.config_builder()
 -- foot.ini had `shell=fish`; the Windows port of that workflow is Nushell.
 local nu = wezterm.home_dir .. "\\AppData\\Local\\Programs\\nu\\bin\\nu.exe"
 config.default_prog = { nu }
-config.enable_kitty_keyboard = true
+-- Deliberately left at the default (false).
+--
+-- Turning it on makes wezterm honour the kitty keyboard protocol, and Nushell's
+-- line editor (reedline, via crossterm) then asks for the extended mode and
+-- starts receiving key *release* events as well as presses. It counts those as
+-- input, so every keystroke produced a spurious newline at the prompt.
+--
+-- The only thing it bought was <S-Esc> reaching Neovim as a distinct key; the
+-- <Esc><Esc> mapping in configs/keymaps.lua covers that on any terminal.
+-- config.enable_kitty_keyboard = true
 
 -- ---- theme  (foot/themes/tokyonight_night.ini) ----------------------------
 config.color_scheme = "Tokyo Night"

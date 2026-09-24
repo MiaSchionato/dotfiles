@@ -8,6 +8,20 @@
 # ---- fish_greeting (empty) -------------------------------------------------
 $env.config.show_banner = false
 
+# ---- shell integration ---------------------------------------------------
+# osc133 and osc633 make Nushell emit prompt markers (FTCS / VS Code) on every
+# redraw. Under WezTerm on Windows that round trip goes through ConPTY and each
+# keystroke ends up printing a fresh line, as if Enter had been pressed.
+#
+# Known interaction, tracked in nushell/nushell#5585 and upstream in the ConPTY
+# layer at microsoft/terminal#13710; disabling the markers is the documented
+# workaround. It only costs prompt-aware features in the terminal (jumping
+# between commands), which WezTerm is not configured to use here.
+#
+# osc2 (window title) and osc8 (hyperlinks) are harmless and stay on.
+$env.config.shell_integration.osc133 = false
+$env.config.shell_integration.osc633 = false
+
 # ---- general feel --------------------------------------------------------
 $env.config.edit_mode = "vi"
 $env.config.cursor_shape = { vi_insert: "line", vi_normal: "block", emacs: "line" }
