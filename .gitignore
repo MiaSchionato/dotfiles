@@ -1,0 +1,12 @@
+# Histórico de comandos do Nushell (config.nu usa history.file_format = "sqlite").
+# O banco muda a cada comando digitado, e -shm/-wal são arquivos temporários do
+# modo WAL do SQLite que só existem com o shell aberto — versioná-los gera
+# conflito em todo merge e publica o histórico de comandos.
+nushell/history.*
+
+# Repositório git próprio (MiaSchionato/pure-nvim). Versionar aqui gravaria um
+# gitlink sem registrar o remote, e um clone novo traria a pasta vazia.
+nvim/
+
+# Estado de ferramentas, não configuração.
+github-copilot/
