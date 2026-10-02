@@ -1,0 +1,123 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.41/schema.json",
+  "app_specific_configuration_path": "$Env:USERPROFILE/.config/komorebi/applications.json",
+  "window_hiding_behaviour": "Minimize",
+  "cross_monitor_move_behaviour": "Insert",
+  "default_workspace_padding": 3,
+  "default_container_padding": 3,
+  "border": true,
+  "border_width": 3,
+  "border_offset": 0,
+  "border_colours": {
+    "single": "#7aa2f7",
+    "stack": "#9ece6a",
+    "monocle": "#bb9af7",
+    "floating": "#e0af68",
+    "unfocused": "#414868"
+  },
+  "animation": {
+    "enabled": true,
+    "duration": 200,
+    "fps": 120,
+    "style": "EaseOutQuad"
+  },
+  "mouse_follows_focus": true,
+  "display_index_preferences": {
+    "0": "PHLC34C-5&12b3b874&0&UID4353",
+    "1": "YMK477A-5&12b3b874&0&UID4355",
+    "2": "RTK3B3A-5&12b3b874&0&UID4352"
+  },
+  "monitors": [
+    {
+      "workspace_padding": 3,
+      "container_padding": 3,
+      "workspaces": [
+        {
+          "name": "1",
+          "layout": "BSP"
+        },
+        {
+          "name": "2",
+          "layout": "BSP"
+        },
+        {
+          "name": "3",
+          "layout": "VerticalStack"
+        },
+        {
+          "name": "4",
+          "layout": "BSP"
+        },
+        {
+          "name": "5",
+          "layout": "Grid"
+        },
+        {
+          "name": "ae",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "AfterFX.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "premiere",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Adobe Premiere Pro.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "resolve",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Resolve.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workspace_padding": 4,
+      "container_padding": 4,
+      "workspaces": [
+        {
+          "name": "1",
+          "layout": "BSP"
+        },
+        {
+          "name": "2",
+          "layout": "VerticalStack"
+        },
+        {
+          "name": "3",
+          "layout": "Grid"
+        }
+      ]
+    },
+    {
+      "workspace_padding": 3,
+      "container_padding": 3,
+      "workspaces": [
+        {
+          "name": "1",
+          "layout": "Rows"
+        },
+        {
+          "name": "2",
+          "layout": "Rows"
+        }
+      ]
+    }
+  ]
+}
