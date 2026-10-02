@@ -3,10 +3,10 @@
   "app_specific_configuration_path": "$Env:USERPROFILE/.config/komorebi/applications.json",
   "window_hiding_behaviour": "Minimize",
   "cross_monitor_move_behaviour": "Insert",
-  "default_workspace_padding": 3,
-  "default_container_padding": 3,
+  "default_workspace_padding": 1,
+  "default_container_padding": 1,
   "border": true,
-  "border_width": 3,
+  "border_width": 1,
   "border_offset": 0,
   "border_colours": {
     "single": "#7aa2f7",
@@ -29,8 +29,8 @@
   },
   "monitors": [
     {
-      "workspace_padding": 3,
-      "container_padding": 3,
+      "workspace_padding": 1,
+      "container_padding": 1,
       "workspaces": [
         {
           "name": "1",
@@ -88,8 +88,8 @@
       ]
     },
     {
-      "workspace_padding": 4,
-      "container_padding": 4,
+      "workspace_padding": 1,
+      "container_padding": 1,
       "workspaces": [
         {
           "name": "1",
@@ -106,8 +106,8 @@
       ]
     },
     {
-      "workspace_padding": 3,
-      "container_padding": 3,
+      "workspace_padding": 1,
+      "container_padding": 1,
       "workspaces": [
         {
           "name": "1",
@@ -118,6 +118,13 @@
           "layout": "Rows"
         }
       ]
+    }
+  ],
+  "floating_applications": [
+    {
+      "kind": "Class",
+      "id": "CabinetWClass",
+      "matching_strategy": "Equals"
     }
   ]
 }
