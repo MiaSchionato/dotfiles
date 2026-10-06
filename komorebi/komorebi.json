@@ -33,27 +33,22 @@
       "container_padding": 1,
       "workspaces": [
         {
-          "name": "1",
+          "name": "main",
           "layout": "BSP"
         },
         {
-          "name": "2",
-          "layout": "BSP"
+          "name": "Nvim",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "nvim-wezterm.exe",
+              "matching_strategy": "Contains"
+            }
+          ]
         },
         {
-          "name": "3",
-          "layout": "VerticalStack"
-        },
-        {
-          "name": "4",
-          "layout": "BSP"
-        },
-        {
-          "name": "5",
-          "layout": "Grid"
-        },
-        {
-          "name": "ae",
+          "name": "AfterFX",
           "layout": "BSP",
           "initial_workspace_rules": [
             {
@@ -64,7 +59,7 @@
           ]
         },
         {
-          "name": "premiere",
+          "name": "Premiere",
           "layout": "BSP",
           "initial_workspace_rules": [
             {
@@ -75,12 +70,23 @@
           ]
         },
         {
-          "name": "resolve",
+          "name": "Resolve",
           "layout": "BSP",
           "initial_workspace_rules": [
             {
               "kind": "Exe",
               "id": "Resolve.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "Browser",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "zen.exe",
               "matching_strategy": "Equals"
             }
           ]
@@ -92,16 +98,8 @@
       "container_padding": 1,
       "workspaces": [
         {
-          "name": "1",
+          "name": "right",
           "layout": "BSP"
-        },
-        {
-          "name": "2",
-          "layout": "VerticalStack"
-        },
-        {
-          "name": "3",
-          "layout": "Grid"
         }
       ]
     },
@@ -110,12 +108,8 @@
       "container_padding": 1,
       "workspaces": [
         {
-          "name": "1",
-          "layout": "Rows"
-        },
-        {
-          "name": "2",
-          "layout": "Rows"
+          "name": "left",
+          "layout": "BSP"
         }
       ]
     }
@@ -124,6 +118,21 @@
     {
       "kind": "Class",
       "id": "CabinetWClass",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "Adobe Premiere Pro.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "AfterFX.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "Epidemic Sound.exe",
       "matching_strategy": "Equals"
     }
   ]

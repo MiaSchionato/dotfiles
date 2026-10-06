@@ -1,0 +1,112 @@
+.shell cmd
+# .shell powershell
+# Reload whkd configuration
+win + ctrl + alt + o            : taskkill /f /im whkd.exe && start /b whkd # if shell is cmd
+# win + ctrl + alt + o          : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden # if shell is pwsh / powershell
+win + ctrl + alt + shift + o    : komorebic reload-configuration
+
+win + ctrl + alt + i            : komorebic toggle-shortcuts
+
+# App shortcuts - these require shell to be pwsh / powershell
+# The apps will be focused if open, or launched if not open
+# alt + f                 : if ($wshell.AppActivate('Firefox') -eq $False) { start firefox }
+# alt + b                 : if ($wshell.AppActivate('Chrome') -eq $False) { start chrome }
+
+# Manipulate windows
+win + ctrl + alt + q                 : komorebic close
+win + ctrl + alt + m                 : komorebic minimize
+win + ctrl + alt + f                 : komorebic toggle-float
+win + ctrl + alt + shift + f         : komorebic toggle-monocle
+
+# Focus windows
+# working
+win + ctrl + alt + h                 : komorebic focus left
+win + ctrl + alt + j                 : komorebic focus down
+win + ctrl + alt + k                 : komorebic focus up
+win + ctrl + alt + l                 : komorebic focus right
+win + ctrl + alt + oem_4             : komorebic cycle-focus previous # oem_4 is [
+win + ctrl + alt + oem_6             : komorebic cycle-focus next # oem_6 is ]
+
+# Move windows
+# Working
+win + ctrl + alt + shift + h         : komorebic move left
+win + ctrl + alt + shift + j         : komorebic move down
+win + ctrl + alt + shift + k         : komorebic move up
+win + ctrl + alt + shift + l         : komorebic move right
+win + ctrl + alt + shift + return    : komorebic promote
+
+#Cycle monitor
+win + ctrl + alt + oem_period            : komorebic cycle-monitor next
+win + ctrl + alt + oem_comma             : komorebic cycle-monitor previous
+win + ctrl + alt + shift + oem_period    : komorebic cycle-move-to-monitor next
+win + ctrl + alt + shift + oem_comma     : komorebic cycle-move-to-monitor previous
+
+# Stack windows
+# alt + left              : komorebic stack left
+# alt + down              : komorebic stack down
+# alt + up                : komorebic stack up
+# alt + right             : komorebic stack right
+# alt + oem_1             : komorebic unstack # oem_1 is ;
+# alt + oem_4             : komorebic cycle-stack previous # oem_4 is [
+# alt + oem_6             : komorebic cycle-stack next # oem_6 is ]
+
+# Resize
+# alt + oem_plus          : komorebic resize-axis horizontal increase
+# alt + oem_minus         : komorebic resize-axis horizontal decrease
+# alt + shift + oem_plus  : komorebic resize-axis vertical increase
+# alt + shift + oem_minus : komorebic resize-axis vertical decrease
+
+
+# Window manager options
+alt + r                      : komorebic retile
+alt + p                 : komorebic toggle-pause
+
+# Layouts
+win + ctrl + alt + x           : komorebic flip-layout horizontal
+win + ctrl + alt + y           : komorebic flip-layout vertical
+
+# Workspaces
+# Working
+win + ctrl + alt + 1            : komorebic focus-named-workspace left
+win + ctrl + alt + 2            : komorebic focus-named-workspace main
+win + ctrl + alt + 3            : komorebic focus-named-workspace right
+# win + ctrl + alt + 4            : komorebic focus-named-workspace 3
+# win + ctrl + alt + 5            : komorebic focus-named-workspace 4
+# win + ctrl + alt + 6            : komorebic focus-named-workspace 5
+# win + ctrl + alt + 7            : komorebic focus-named-workspace 6
+# win + ctrl + alt + 8            : komorebic focus-named-workspace 7
+
+# Move windows across workspaces
+# Working
+win + ctrl + alt + shift + 1         : komorebic move-to-named-workspace left
+win + ctrl + alt + shift + 2         : komorebic move-to-named-workspace main
+win + ctrl + alt + shift + 3         : komorebic move-to-named-workspace right
+win + ctrl + alt + shift + n         : komorebic move-to-named-workspace Nvim
+win + ctrl + alt + shift + b         : komorebic move-to-named-workspace Browser
+win + ctrl + alt + shift + p         : komorebic move-to-named-workspace Premiere
+win + ctrl + alt + shift + d         : komorebic move-to-named-workspace AfterFX
+win + ctrl + alt + shift + r         : komorebic move-to-named-workspace Resolve
+# win + ctrl + alt + shift + 4         : komorebic move-to-workspace 3
+# win + ctrl + alt + shift + 5         : komorebic move-to-workspace 4
+# win + ctrl + alt + shift + 6         : komorebic move-to-workspace 5
+# win + ctrl + alt + shift + 7         : komorebic move-to-workspace 6
+# win + ctrl + alt + shift + 8         : komorebic move-to-workspace 7
+
+
+# Launching apps
+win + ctrl + alt + return              : wezterm
+win + ctrl + alt + n                   : komorebic focus-named-workspace Nvim & tasklist /FI "IMAGENAME eq nvim-wezterm.exe" | find /I "nvim-wezterm.exe" > nul || start "" nvim-wezterm.exe start -- wsl --cd "~" -e sh -c nvim
+
+win + ctrl + alt + b                   : komorebic focus-named-workspace Browser & tasklist /FI "IMAGENAME eq zen.exe" | find /I "zen.exe" > nul || start "" zen.exe
+win + ctrl + alt + p                   : komorebic focus-named-workspace Premiere & tasklist /FI "IMAGENAME eq Adobe Premiere Pro.exe" | find /I "Adobe Premiere Pro.exe" > nul || start "" "C:\Program Files\Adobe\Adobe Premiere Pro 2026\Adobe Premiere Pro.exe"
+win + ctrl + alt + r                   : komorebic focus-named-workspace AfterFX & tasklist /FI "IMAGENAME eq AfterFX.exe" | find /I "AfterFX.exe" > nul || start "" "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\AfterFX.exe"
+# win + ctrl + alt + r                   : komorebic focus-named-workspace Nvim & tasklist /FI "IMAGENAME eq nvim-wezterm.exe" | find /I "nvim-wezterm.exe" > nul || start "" nvim-wezterm.exe start -- nvim
+
+
+# Workspaces for apps
+# win + ctrl + alt + n         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "Nvim"
+# win + ctrl + alt + b         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "Browser"
+# win + ctrl + alt + p         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "Premiere"
+# win + ctrl + alt + d         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "AfterFX"
+# win + ctrl + alt + r         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "Resolve"
+#

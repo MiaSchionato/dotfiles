@@ -1,0 +1,5 @@
+[manager]
+prepend_keymap = [
+    # Close current tab using t followed by w
+    { on = [ "t", "w" ], run = "close", desc = "Close current tab" }
+]
