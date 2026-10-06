@@ -10,3 +10,8 @@ nvim/
 
 # Estado de ferramentas, não configuração.
 github-copilot/
+
+# Backups made before editing a config (kept locally, not configuration).
+*.bak
+*.bak/
+*.before-fixes-*

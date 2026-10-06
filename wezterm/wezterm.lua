@@ -5,10 +5,11 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
+config.default_prog = { "wsl.exe", "--cd", "~", "--exec", "fish" }
 -- ---- shell -----------------------------------------------------------------
 -- foot.ini had `shell=fish`; the Windows port of that workflow is Nushell.
-local nu = wezterm.home_dir .. "\\AppData\\Local\\Programs\\nu\\bin\\nu.exe"
-config.default_prog = { nu }
+-- local nu = wezterm.home_dir .. "\\AppData\\Local\\Programs\\nu\\bin\\nu.exe"
+-- config.default_prog = { nu }
 -- Deliberately left at the default (false).
 --
 -- Turning it on makes wezterm honour the kitty keyboard protocol, and Nushell's
@@ -85,5 +86,27 @@ config.keys = {
   { key = "k", mods = "CTRL|SHIFT", action = wezterm.action.ActivatePaneDirection("Up") },
   { key = "j", mods = "CTRL|SHIFT", action = wezterm.action.ActivatePaneDirection("Down") },
 }
+
+config.window_close_confirmation = "NeverPrompt"
+-- Not needed with 'NeverPrompt'. If confirmations are re-enabled, use this list to exempt specific processes.
+-- config.skip_close_confirmation_for_processes_named = {
+--   'nu.exe',
+--   'cmd.exe',
+--   'pwsh.exe',
+--   'powershell.exe',
+--   'nvim.exe',
+--   'Nvim.exe',
+--   'Ollama.exe',
+--   'ollama.exe',
+--   'neovim.exe',
+--   'wezterm.exe',
+--   'curl.exe',
+--   'node.exe',
+--   'fzf.exe',
+--   'conhost.exe',
+--   'bash.exe',
+--   'lua-language-server.exe',
+--
+-- }
 
 return config
