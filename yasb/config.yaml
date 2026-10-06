@@ -1,0 +1,136 @@
+# yasb, after Mia's Hyprland waybar (dotfiles, branch main, waybar/):
+# a pill-shaped bar with a thin blue border; workspaces and media on the
+# left, the window title in the middle, tray, memory, CPU, clock and
+# notifications on the right. Styles in styles.css next to this file.
+watch_stylesheet: true
+watch_config: true
+debug: false
+update_check: true
+
+komorebi:
+  start_command: "komorebic start --whkd"
+  stop_command: "komorebic stop --whkd"
+  reload_command: "komorebic reload-configuration"
+
+bars:
+  status-bar:
+    enabled: true
+    screens: ["*"]
+    class_name: "yasb-bar"
+    alignment:
+      position: "top"
+      align: "center"
+    blur_effect:
+      enabled: false
+    window_flags:
+      always_on_top: false
+      windows_app_bar: true
+    dimensions:
+      width: "100%"
+      height: 32
+    # The waybar sat 10px in from each side, flush with the top.
+    padding:
+      top: 4
+      left: 10
+      bottom: 2
+      right: 10
+    widgets:
+      left: ["komorebi_workspaces", "media"]
+      center: ["active_window"]
+      right: ["systray", "memory", "cpu", "clock", "notifications"]
+
+widgets:
+  komorebi_workspaces:
+    type: "komorebi.workspaces.WorkspaceWidget"
+    options:
+      label_offline: ""
+      # Named workspaces (Premiere, Resolve…) show their name; the others
+      # their number, as the waybar did.
+      label_workspace_btn: "{name}"
+      label_workspace_active_btn: "{name}"
+      label_workspace_populated_btn: "{name}"
+      label_default_name: "{index}"
+      label_zero_index: false
+      hide_empty_workspaces: true
+      hide_if_offline: true
+
+  media:
+    type: "yasb.media.MediaWidget"
+    options:
+      label: "{title}{s}{artist}"
+      label_alt: "{title}"
+      separator: " · "
+      hide_empty: true
+      max_field_size:
+        label: 30
+        label_alt: 40
+      show_thumbnail: false
+      controls_hide: true
+
+  active_window:
+    type: "yasb.active_window.ActiveWindowWidget"
+    options:
+      label: "{win[title]}"
+      label_alt: "{win[process][name]}"
+      label_no_window: ""
+      label_icon: true
+      label_icon_size: 14
+      max_length: 60
+      max_length_ellipsis: "…"
+      monitor_exclusive: true
+
+  systray:
+    type: "yasb.systray.SystrayWidget"
+    options:
+      class_name: "systray"
+      label_collapsed: ""
+      label_expanded: ""
+      label_position: "left"
+      icon_size: 14
+      show_unpinned: false
+      show_unpinned_button: true
+
+  memory:
+    type: "yasb.memory.MemoryWidget"
+    options:
+      label: "<span></span> {virtual_mem_percent}%"
+      label_alt: "<span></span> {virtual_mem_free}"
+      update_interval: 3000
+      callbacks:
+        on_left: "toggle_label"
+        on_right: "toggle_menu"
+
+  cpu:
+    type: "yasb.cpu.CpuWidget"
+    options:
+      label: "<span></span> {info[percent][total]}%"
+      label_alt: "<span></span> {info[freq][current]} MHz"
+      update_interval: 3000
+      callbacks:
+        on_left: "toggle_label"
+        on_right: "toggle_menu"
+
+  clock:
+    type: "yasb.clock.ClockWidget"
+    options:
+      label: "{%H:%M}"
+      label_alt: "{%a %d/%m %H:%M}"
+      locale: "pt_BR"
+      update_interval: 1000
+      calendar:
+        alignment: "right"
+        direction: "down"
+        show_week_numbers: false
+        show_holidays: false
+
+  notifications:
+    type: "yasb.notifications.NotificationsWidget"
+    options:
+      label: "<span></span> {count}"
+      label_alt: "{count} notifications"
+      hide_empty: true
+      tooltip: false
+      callbacks:
+        on_left: "toggle_notification"
+        on_right: "do_nothing"
+        on_middle: "toggle_label"

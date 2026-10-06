@@ -1,0 +1,65 @@
+/*
+ * After the old waybar (dotfiles, branch main, waybar/style.css):
+ *   bar        #0F0F17, 1px #89B4FA border, fully rounded (a pill)
+ *   text       #A1BDCE, bold JetBrains Mono Nerd Font
+ *   muted      #888789 (empty workspaces, media)
+ *   hover      #72D792
+ *   tooltips   #171717 on a 2px #89B4FA border
+ */
+
+* {
+    font-family: "JetBrainsMono NF";
+    font-size: 13px;
+    font-weight: 700;
+    color: #A1BDCE;
+}
+
+.yasb-bar {
+    background-color: #0F0F17;
+    border: 1px solid #89B4FA;
+    border-radius: 13px;
+}
+
+.container-left { padding-left: 6px; }
+.container-right { padding-right: 6px; }
+
+.widget {
+    background-color: transparent;
+    padding: 0 8px;
+}
+
+.widget .label { padding: 0 2px; }
+
+/* Workspaces: muted when empty, light when used, blue when current. */
+.komorebi-workspaces .ws-btn {
+    background-color: transparent;
+    border: none;
+    color: #888789;
+    padding: 0 5px;
+    margin: 0 1px;
+}
+.komorebi-workspaces .ws-btn.populated { color: #A1BDCE; }
+.komorebi-workspaces .ws-btn.active { color: #89B4FA; }
+.komorebi-workspaces .ws-btn:hover { color: #72D792; }
+
+.media-widget .label { color: #888789; font-weight: 600; }
+
+.active-window-widget .label { font-weight: 600; }
+
+.clock-widget .label { color: #A1BDCE; }
+
+.systray .unpinned-visibility-btn {
+    border: none;
+    background: transparent;
+    color: #888789;
+}
+
+/* Popups and tooltips, as the waybar's. */
+QToolTip,
+.clock-popup.calendar,
+.media-menu {
+    background-color: #171717;
+    color: #A1BDCE;
+    border: 2px solid #89B4FA;
+    border-radius: 7px;
+}
