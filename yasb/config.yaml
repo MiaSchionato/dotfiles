@@ -25,6 +25,8 @@ bars:
     window_flags:
       always_on_top: false
       windows_app_bar: true
+      # Out of the way of fullscreen windows (video, games, presentations).
+      hide_on_fullscreen: true
     dimensions:
       width: "100%"
       height: 32
