@@ -5,7 +5,9 @@ win + ctrl + alt + o            : taskkill /f /im whkd.exe && start /b whkd # if
 # win + ctrl + alt + o          : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden # if shell is pwsh / powershell
 win + ctrl + alt + shift + o    : komorebic reload-configuration
 
-win + ctrl + alt + i            : komorebic toggle-shortcuts
+# Unbound 2026-10-07: kanata turns Win+I (Cmd+I, italic) into this chord, so
+# one keystroke silently disabled every whkd shortcut until toggled back.
+# win + ctrl + alt + i            : komorebic toggle-shortcuts
 
 # App shortcuts - these require shell to be pwsh / powershell
 # The apps will be focused if open, or launched if not open
@@ -65,11 +67,15 @@ alt + p                 : komorebic toggle-pause
 win + ctrl + alt + x           : komorebic flip-layout horizontal
 win + ctrl + alt + y           : komorebic flip-layout vertical
 
-# Workspaces
-# Working
-win + ctrl + alt + 1            : komorebic focus-named-workspace left
-win + ctrl + alt + 2            : komorebic focus-named-workspace main
-win + ctrl + alt + 3            : komorebic focus-named-workspace right
+# Monitors (Mia, 2026-10-07): Win+1 left, Win+2 center, Win+3 right; with
+# Shift the focused window moves there. komorebi's indices are not left to
+# right: 0 is the center Philips, 1 the right one, 2 the left portrait one
+# (pinned by port in komorebi.json). focus-monitor keeps whatever workspace
+# that monitor shows; focus-named-workspace main used to switch the center
+# monitor back to "main" every time.
+win + ctrl + alt + 1            : komorebic focus-monitor 2
+win + ctrl + alt + 2            : komorebic focus-monitor 0
+win + ctrl + alt + 3            : komorebic focus-monitor 1
 # win + ctrl + alt + 4            : komorebic focus-named-workspace 3
 # win + ctrl + alt + 5            : komorebic focus-named-workspace 4
 # win + ctrl + alt + 6            : komorebic focus-named-workspace 5
@@ -78,9 +84,9 @@ win + ctrl + alt + 3            : komorebic focus-named-workspace right
 
 # Move windows across workspaces
 # Working
-win + ctrl + alt + shift + 1         : komorebic move-to-named-workspace left
-win + ctrl + alt + shift + 2         : komorebic move-to-named-workspace main
-win + ctrl + alt + shift + 3         : komorebic move-to-named-workspace right
+win + ctrl + alt + shift + 1         : komorebic move-to-monitor 2
+win + ctrl + alt + shift + 2         : komorebic move-to-monitor 0
+win + ctrl + alt + shift + 3         : komorebic move-to-monitor 1
 win + ctrl + alt + shift + n         : komorebic move-to-named-workspace Nvim
 win + ctrl + alt + shift + b         : komorebic move-to-named-workspace Browser
 win + ctrl + alt + shift + p         : komorebic move-to-named-workspace Premiere
