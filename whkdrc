@@ -5,9 +5,6 @@ win + ctrl + alt + o            : taskkill /f /im whkd.exe && start /b whkd # if
 # win + ctrl + alt + o          : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden # if shell is pwsh / powershell
 win + ctrl + alt + shift + o    : komorebic reload-configuration
 
-# Unbound 2026-10-07: kanata turns Win+I (Cmd+I, italic) into this chord, so
-# one keystroke silently disabled every whkd shortcut until toggled back.
-# win + ctrl + alt + i            : komorebic toggle-shortcuts
 
 # App shortcuts - these require shell to be pwsh / powershell
 # The apps will be focused if open, or launched if not open
