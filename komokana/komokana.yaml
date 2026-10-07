@@ -1,0 +1,19 @@
+# komokana tells kanata which base layer to use, based on the window komorebi
+# reports as focused. Anything not listed here falls back to the layer passed
+# with --default-layer (base).
+#
+# Started by the "Desktop stack" scheduled task as:
+#   komokana -p 9999 -d base -t -c ~/.config/komokana/komokana.yaml
+#
+# This replaces what AutoHotkey used to do with #HotIf WinActive.
+
+# Zen: Win+W closes a tab instead of closing the window.
+- exe: "zen.exe"
+  target_layer: "zen"
+
+# Premiere and After Effects: a CapsLock tap sends Delete instead of Esc.
+- exe: "Adobe Premiere Pro.exe"
+  target_layer: "premiere"
+
+- exe: "AfterFX.exe"
+  target_layer: "premiere"
