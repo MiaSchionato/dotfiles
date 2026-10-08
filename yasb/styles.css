@@ -64,30 +64,39 @@ QToolTip,
     border-radius: 7px;
 }
 
-/* The vim-like mode letter (2026-10-08), two looks side by side for Mia to
-   pick (test 5: a full-height pill looked out of proportion).
-   A: a small round badge, the blue of the lualine's normal mode. */
-.vim-mode-a {
+/* The vim-like mode letter (2026-10-08). One widget, two looks in the same
+   place; a left click switches (toggle_label). Its container stays plain,
+   each label carries its own look. */
+.vim-mode {
+  background-color: transparent;
+  padding: 0;
+  margin: 0 6px 0 0;
+}
+/* The label: a small round badge, the blue of the lualine's normal mode,
+   the letter centred by Qt itself. */
+.vim-mode .label {
   background-color: #82aaff;
+  color: #092236;
+  font-weight: bold;
   border-radius: 9px;
   min-width: 18px;
   max-width: 18px;
   min-height: 18px;
   max-height: 18px;
   padding: 0;
-  margin: 4px 6px 4px 0;
+  margin: 4px 0;
+  qproperty-alignment: AlignCenter;
 }
-.vim-mode-a .label {
-  color: #092236;
-  font-weight: bold;
-  padding: 0 0 0 5px;
-}
-/* B: the letter alone, in that blue, as the workspace names. */
-.vim-mode-b {
+/* The alternative label: the letter alone, in that blue, as the workspace
+   names. */
+.vim-mode .label.alt {
   background-color: transparent;
-  padding: 0 6px 0 2px;
-}
-.vim-mode-b .label {
   color: #82aaff;
-  font-weight: bold;
+  border-radius: 0;
+  min-width: 0;
+  max-width: 100px;
+  min-height: 0;
+  max-height: 100px;
+  margin: 0;
+  padding: 0 2px;
 }
