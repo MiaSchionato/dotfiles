@@ -100,7 +100,7 @@ win + ctrl + alt + shift + r         : komorebic move-to-named-workspace Resolve
 # start "": whkd waits for the command to end, and plain wezterm only ends
 # when its window closes, so every shortcut froze after Win+Enter (2026-10-07).
 win + ctrl + alt + return              : start "" wezterm-gui.exe
-win + ctrl + alt + n                   : komorebic focus-named-workspace Nvim & tasklist /FI "IMAGENAME eq nvim-wezterm.exe" | find /I "nvim-wezterm.exe" > nul || start "" nvim-wezterm.exe start -- wsl --cd "~" -e sh -c nvim
+win + ctrl + alt + n                   : komorebic focus-named-workspace Nvim & tasklist /FI "IMAGENAME eq nvim-wezterm.exe" | find /I "nvim-wezterm.exe" > nul || start "" nvim-wezterm.exe start -- wsl --cd "~" -e fish -c nvim
 
 win + ctrl + alt + b                   : komorebic focus-named-workspace Browser & tasklist /FI "IMAGENAME eq zen.exe" | find /I "zen.exe" > nul || start "" zen.exe
 win + ctrl + alt + p                   : komorebic focus-named-workspace Premiere & tasklist /FI "IMAGENAME eq Adobe Premiere Pro.exe" | find /I "Adobe Premiere Pro.exe" > nul || start "" "C:\Program Files\Adobe\Adobe Premiere Pro 2026\Adobe Premiere Pro.exe"
