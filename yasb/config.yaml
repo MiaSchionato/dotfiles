@@ -37,11 +37,41 @@ bars:
       bottom: 2
       right: 10
     widgets:
-      left: ["komorebi_workspaces", "media"]
+      left: ["vim_mode", "vim_mode_b", "komorebi_workspaces", "media"]
       center: ["active_window"]
       right: ["systray", "memory", "cpu", "clock", "notifications"]
 
 widgets:
+  # The vim-like mode (2026-10-08): one letter (I in INSERT).
+  # mode.cmd reads the layer komokana writes for kanata.
+  vim_mode:
+    type: "yasb.custom.CustomWidget"
+    options:
+      label: "{data}"
+      label_alt: "{data}"
+      class_name: "vim-mode-a"
+      exec_options:
+        # Forward slashes and the short path: yasb splits the command like a
+        # Unix shell, which ate the backslashes (test 4: no widget).
+        run_cmd: 'cmd /c C:/Users/MIASCH~1/.config/yasb/mode.cmd'
+        run_interval: 250
+        return_format: "string"
+        hide_empty: true
+
+  vim_mode_b:
+    type: "yasb.custom.CustomWidget"
+    options:
+      label: "{data}"
+      label_alt: "{data}"
+      class_name: "vim-mode-b"
+      exec_options:
+        # Forward slashes and the short path: yasb splits the command like a
+        # Unix shell, which ate the backslashes (test 4: no widget).
+        run_cmd: 'cmd /c C:/Users/MIASCH~1/.config/yasb/mode.cmd'
+        run_interval: 250
+        return_format: "string"
+        hide_empty: true
+
   komorebi_workspaces:
     type: "komorebi.workspaces.WorkspaceWidget"
     options:

@@ -1,4 +1,8 @@
 ;; ============================================================================
+;;  VIM-LIKE DRAFT (kanata.vim.kbd), 2026-10-08. Not in use: a copy of
+;;  kanata.kbd with the modes of the vault note "Proposta atalhos vim-like"
+;;  (version 3). Loaded only to test, with {"ReloadFile":{...}} on port 9999.
+;; ============================================================================
 ;;  Kanata Configuration - Ported from AutoHotkey (~/Documents/AutoHotkey)
 ;;
 ;;  Features:
@@ -34,6 +38,8 @@
 (defcfg
   process-unmapped-keys yes
   concurrent-tap-hold yes
+  ;; Start in WINDOW mode, as decided (also after each live reload).
+  alias-to-trigger-on-load enter-win
 )
 
 ;; ----------------------------------------------------------------------------
@@ -45,6 +51,9 @@
   caps a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   lctl f13 lalt           spc            ralt rmet rctl
+  ;; Left mouse button: in WINDOW a click also goes to INSERT. On Windows
+  ;; kanata only starts handling the mouse after a restart, not a reload.
+  mlft
 )
 
 ;; ----------------------------------------------------------------------------
@@ -54,6 +63,13 @@
 ;; Win releases it (see @win and @w-tab).
 (defvirtualkeys
   vk-alt lalt
+  ;; The modes: held down by a virtual key, ON TOP of the base layer that
+  ;; komokana swaps (base / premiere / zen). A focus change swaps the base
+  ;; underneath and the mode stays.
+  vk-window (layer-while-held window)
+  vk-resize (layer-while-held resize)
+  ;; COMMAND (":"): the keys reach the launcher; Esc or Enter back to WINDOW.
+  vk-cmd (layer-while-held cmdline)
 )
 
 ;; ----------------------------------------------------------------------------
@@ -72,7 +88,7 @@
 
   ;; Left Win / Cmd: Tap = Alt+Space (launcher), Hold = cmd_layer.
   ;; Releasing it also lets go of the Alt that Win+Tab holds (@w-tab).
-  win (tap-hold-press 200 200 A-spc
+  win (tap-hold-press 200 200 (on-press press-vkey vk-window)
         (multi (layer-while-held cmd_layer) (on-release release-vkey vk-alt)))
 
   ;; --- Per-application variants, selected by komokana ---
@@ -88,7 +104,7 @@
 
   ;; Left Win inside Zen: same tap (launcher), but the hold reaches a cmd
   ;; layer whose W closes a tab instead of a window.
-  win-zen (tap-hold-press 200 200 A-spc
+  win-zen (tap-hold-press 200 200 (on-press press-vkey vk-window)
             (multi (layer-while-held cmd_zen) (on-release release-vkey vk-alt)))
 
   ;; Win+W outside a browser. whkd already maps this chord to komorebic
@@ -218,6 +234,97 @@
   rs-circumflex (multi rsft (layer-while-held circumflex))
   ls-tilde (multi lsft (layer-while-held tilde))
   rs-tilde (multi rsft (layer-while-held tilde))
+  ;; =========================================================================
+  ;;  Vim-like modes (vault: "Proposta atalhos vim-like", version 3)
+  ;;  INSERT = no mode layer (the base, as today). WINDOW = vk-window held.
+  ;;  RESIZE = vk-resize held on top of WINDOW. g / m = one key on goto / move.
+  ;;  Window commands are the same hidden Ctrl+Alt+Win chords whkd runs today;
+  ;;  the new ones use F13-F19 (whkdrc.vim).
+  ;; =========================================================================
+  enter-win (on-press press-vkey vk-window)
+  ;; i, or a mouse click: out of every mode, back to INSERT.
+  to-ins (multi (on-press release-vkey vk-resize) (on-press release-vkey vk-cmd)
+          (on-press release-vkey vk-window))
+  click-ins (multi mlft (on-press release-vkey vk-resize) (on-press release-vkey vk-cmd)
+              (on-press release-vkey vk-window))
+  ;; ":" = the launcher (Alt+Space) in COMMAND mode, as vim's command line:
+  ;; the keys reach the launcher, and Esc (cancel) or Enter (open) go back to
+  ;; WINDOW (note, test 1). Shift is let go first, or the launcher would get
+  ;; Alt+Shift+Space.
+  w-colon (fork XX
+            (multi (release-key lsft) (release-key rsft)
+                   (on-press release-vkey vk-window) (on-press press-vkey vk-cmd)
+                   (macro 5 A-spc))
+            (lsft rsft))
+  cmd-back (multi (on-press release-vkey vk-cmd) (on-press press-vkey vk-window))
+  ;; In COMMAND: Enter opens the choice and goes back to WINDOW; the CapsLock
+  ;; tap (your Esc) cancels and goes back too. Held, CapsLock is still the
+  ;; arrows layer. (A physical Esc key is not in defsrc: it just closes the
+  ;; launcher and you stay in COMMAND; i or a Win tap leaves it.)
+  cmd-ret (multi ret @cmd-back)
+  cmd-cap (tap-hold-press 200 200 (multi esc @cmd-back) (layer-while-held caps_nav))
+  ;; Tab / Shift+Tab: next / previous workspace of this monitor (note,
+  ;; test 2; it was the windows: those are hjkl).
+  w-cyc (fork (macro C-A-M-S-f13) (macro C-A-M-S-f14) (lsft rsft))
+  ;; q: close the window; in Zen, the tab.
+  w-q (switch ((base-layer zen)) C-w break () A-f4 break)
+  ;; Prefixes, as vim's: the next key only, then back to WINDOW. Esc or any
+  ;; key without a meaning cancels.
+  g-pre (one-shot-press 5000 (layer-while-held goto))
+  m-pre (one-shot-press 5000 (layer-while-held move))
+  ;; Shift would use up the prefix (it counts as the next key): held, it
+  ;; keeps the prefix layer, so g Shift+c works.
+  ls-goto (multi lsft (layer-while-held goto))
+  rs-goto (multi rsft (layer-while-held goto))
+  ls-move (multi lsft (layer-while-held move))
+  rs-move (multi rsft (layer-while-held move))
+  r-mode (on-press press-vkey vk-resize)
+  r-exit (on-press release-vkey vk-resize)
+  ;; goto: where g takes you (focus, or launch if closed: whkd does that).
+  go-1 (macro C-A-M-1)
+  go-2 (macro C-A-M-2)
+  go-3 (macro C-A-M-3)
+  go-main (macro C-A-M-f13)
+  go-nvim (macro C-A-M-n)
+  go-zen (macro C-A-M-b)
+  go-pr (macro C-A-M-p)
+  go-ae (macro C-A-M-r)
+  go-res (macro C-A-M-f14)
+  go-term (macro C-A-M-ret)
+  ;; Added from the note (10-08): gc Claude, gd desktop, ge Explorer,
+  ;; gh / gl left / right monitor (as g1 / g3).
+  go-claude (macro C-A-M-f20)
+  go-numi (macro C-A-M-f22)
+  ;; gc Claude, gC Numi (decided in the note, test 1)
+  ;; Test 3: g is only for apps with a workspace of their own. Numi (a
+  ;; float) is c alone in WINDOW; the floating terminal is Enter or t alone.
+  go-c @go-claude
+  go-wa (macro C-A-M-S-f15)
+  go-fterm (macro C-A-M-S-f17)
+  w-numi (macro C-A-M-S-f22)
+  ;; e alone = Explorer (a float too; note, round 4). gd stays: a place.
+  go-exp (macro C-A-M-f21)
+  go-desk M-d
+  ;; move: where m sends the focused window.
+  mv-1 (macro C-A-M-S-1)
+  mv-2 (macro C-A-M-S-2)
+  mv-3 (macro C-A-M-S-3)
+  mv-main (macro C-A-M-f15)
+  mv-nvim (macro C-A-M-S-n)
+  mv-zen (macro C-A-M-S-b)
+  mv-pr (macro C-A-M-S-p)
+  mv-ae (macro C-A-M-S-d)
+  mv-res (macro C-A-M-S-r)
+  mv-claude (macro C-A-M-f23)
+  mv-wa (macro C-A-M-S-f16)
+  ;; resize: h/l narrower/wider, k/j shorter/taller; f float (F monocle);
+  ;; x / y flip the layout.
+  rs-h (macro C-A-M-f16)
+  rs-j (macro C-A-M-f17)
+  rs-k (macro C-A-M-f18)
+  rs-l (macro C-A-M-f19)
+  rs-x (macro C-A-M-x)
+  rs-y (macro C-A-M-y)
 )
 
 ;; ----------------------------------------------------------------------------
@@ -229,6 +336,7 @@
   @cap a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win @alt          spc            ralt rmet rctl
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -240,6 +348,7 @@
   @cap-del a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win @alt          spc            ralt rmet rctl
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -251,6 +360,7 @@
   @cap a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win-zen @alt          spc            ralt rmet rctl
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -262,6 +372,7 @@
   _       _    _    _    _    _    lft  down up   rght _    _    _
   _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
   _       _    _              _              _    _    _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -273,6 +384,7 @@
   _       _    _    _    _    _    _    _    _    _    _    _    _
   _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
   _       _    _              _              _    _    _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -288,6 +400,7 @@
   _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -299,6 +412,7 @@
   _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -310,6 +424,7 @@
   _      _    _    _    _    _    C-M-lft _ _  C-M-rght _  _    _
   _      _    _    _    @clip _   _    _    _    _    _    _
   _      _    _              _              _    _    _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -323,6 +438,7 @@
   _      @a-acu _      _      _      _      _      _      _      _      _      _      _
   @ls-acute      _      _      @c-acu      _      _      _      _      _      _      _      @rs-acute
   _      _      _                    (unicode ´)          _      _      _
+  _
 )
 
 ;; Grave Accent Layer: Alt+` or Caps+` then letter
@@ -332,6 +448,7 @@
   _      @a-grv _      _      _      _      _      _      _      _      _      _      _
   @ls-grave      _      _      _      _      _      _      _      _      _      _      @rs-grave
   _      _      _                    (unicode `)          _      _      _
+  _
 )
 
 ;; Circumflex Accent Layer: Alt+I or Caps+I then letter
@@ -341,6 +458,7 @@
   _      @a-cir _      _      _      _      _      _      _      _      _      _      _
   @ls-circumflex      _      _      _      _      _      _      _      _      _      _      @rs-circumflex
   _      _      _                    (unicode ^)          _      _      _
+  _
 )
 
 ;; Tilde Accent Layer: Alt+N or Caps+N then letter
@@ -350,4 +468,61 @@
   _      @a-tld _      _      _      _      _      _      _      _      _      _      _
   @ls-tilde      _      _      _      _      _      @n-tld      _      _      _      _      @rs-tilde
   _      _      _                    (unicode ~)          _      _      _
+  _
+)
+
+;; ============================================================================
+;;  Vim-like modes
+;; ============================================================================
+;; WINDOW: the base mode, as vim's normal. Keys without a meaning do nothing
+;; (XX): here letters never reach the app. _ = as in the layer below (Win,
+;; CapsLock, Shift, Ctrl, Alt).
+(deflayer window
+  XX     XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  @w-cyc @w-q  XX    @go-exp @r-mode @go-term XX XX @to-ins @m-o XX   XX    XX    XX
+  _      XX    XX    XX    XX    @g-pre @m-h @m-j  @m-k  @m-l  @w-colon XX  @go-fterm
+  _      XX    @w-q  @w-numi XX  XX    XX    @m-pre XX   XX    XX    _
+  _      _     _                 XX                _     _     _
+  @click-ins
+)
+
+;; g: go to.
+(deflayer goto
+  XX     @go-1 @go-2 @go-3 XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  XX     XX    @go-wa XX    @go-res XX  XX    XX    XX    XX    @go-pr XX   XX    XX
+  XX     @go-ae XX   @go-desk XX @go-main @go-1 XX XX    @go-3 XX    XX    XX
+  @ls-goto XX  XX    @go-c XX    @go-zen @go-nvim XX XX XX    XX    @rs-goto
+  XX     _     XX                XX                XX    XX    XX
+  @click-ins
+)
+
+;; m: move the focused window.
+(deflayer move
+  XX     @mv-1 @mv-2 @mv-3 XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  XX     XX    @mv-wa XX   @mv-res XX  XX    XX    XX    XX    @mv-pr XX   XX    XX
+  XX     @mv-ae XX   XX    XX    @mv-main @mv-1 XX XX    @mv-3 XX    XX    XX
+  @ls-move XX  XX    @mv-claude XX @mv-zen @mv-nvim XX XX XX  XX    @rs-move
+  XX     _     XX                XX                XX    XX    XX
+  @click-ins
+)
+
+;; RESIZE (r in WINDOW): Esc (CapsLock) back to WINDOW, i to INSERT.
+(deflayer resize
+  XX     XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  XX     XX    XX    XX    XX    XX    @rs-y XX    @to-ins XX  XX    XX    XX    XX
+  @r-exit XX   XX    XX    @m-f  XX    @rs-h @rs-j @rs-k @rs-l XX    XX    XX
+  _      XX    @rs-x XX    XX    XX    XX    XX    XX    XX    XX    _
+  _      _     _                 XX                _     _     _
+  @click-ins
+)
+
+;; COMMAND (":" in WINDOW): everything reaches the app (the launcher), as in
+;; INSERT, except Enter and the CapsLock tap, which also go back to WINDOW.
+(deflayer cmdline
+  _      _     _     _     _     _     _     _     _     _     _     _     _     _
+  _      _     _     _     _     _     _     _     _     _     _     _     _     _
+  @cmd-cap _   _     _     _     _     _     _     _     _     _     _     @cmd-ret
+  _      _     _     _     _     _     _     _     _     _     _     _
+  _      _     _                 _                 _     _     _
+  @click-ins
 )

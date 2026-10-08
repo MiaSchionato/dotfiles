@@ -90,6 +90,28 @@
               "matching_strategy": "Equals"
             }
           ]
+        },
+        {
+          "name": "Claude",
+          "layout": "BSP",
+          "workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "claude.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "layout": "BSP",
+          "workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "WhatsApp.Root.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
         }
       ]
     },
@@ -133,6 +155,36 @@
     {
       "kind": "Exe",
       "id": "Epidemic Sound.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "Numi.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Class",
+      "id": "floatterm",
+      "matching_strategy": "Equals"
+    }
+  ],
+  "manage_rules": [
+    {
+      "kind": "Exe",
+      "id": "claude.exe",
+      "matching_strategy": "Equals"
+    }
+  ],
+  "float_rule_placement": "Center",
+  "tray_and_multi_window_applications": [
+    {
+      "kind": "Exe",
+      "id": "claude.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "WhatsApp.Root.exe",
       "matching_strategy": "Equals"
     }
   ]

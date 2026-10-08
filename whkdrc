@@ -115,3 +115,58 @@ win + ctrl + alt + r                   : komorebic focus-named-workspace AfterFX
 # win + ctrl + alt + d         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "AfterFX"
 # win + ctrl + alt + r         : &"C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe" "C:\Users\Mia Schionato\.config\AutoHotkey\Apps.ahk" "Resolve"
 #
+
+# ============================================================================
+# VIM-LIKE MODES (adopted 2026-10-08; vault note "Proposta atalhos vim-like").
+# The commands the modes of kanata.vim.kbd send: kanata decides the mode;
+# whkd, a normal user, runs. The chords below are never typed by hand: kanata
+# sends them. The kanata without vim (kanata.kbd) never sends them, so they do
+# no harm there (Win+` switches between the two kanata configs).
+# Each one logs to %TEMP%\desktop-stack-whkd.log (when it ran and what it
+# printed); %TEMP%, so Windows cleans it up in time.
+# ============================================================================
+# gg / mg: the main workspace (center monitor)
+win + ctrl + alt + f13                 : echo %date% %time% f13 >> %TEMP%\desktop-stack-whkd.log & (komorebic focus-named-workspace main) >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + f15                 : echo %date% %time% f15 >> %TEMP%\desktop-stack-whkd.log & (komorebic move-to-named-workspace main) >> %TEMP%\desktop-stack-whkd.log 2>&1
+# gr: Resolve (launched if closed), as the other apps
+win + ctrl + alt + f14                 : echo %date% %time% f14 >> %TEMP%\desktop-stack-whkd.log & (komorebic focus-named-workspace Resolve & tasklist /FI "IMAGENAME eq Resolve.exe" | find /I "Resolve.exe" > nul || start "" "C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe") >> %TEMP%\desktop-stack-whkd.log 2>&1
+# RESIZE: h/l narrower/wider, k/j shorter/taller
+win + ctrl + alt + f16                 : echo %date% %time% f16 >> %TEMP%\desktop-stack-whkd.log & (komorebic resize-axis horizontal decrease) >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + f17                 : echo %date% %time% f17 >> %TEMP%\desktop-stack-whkd.log & (komorebic resize-axis vertical increase) >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + f18                 : echo %date% %time% f18 >> %TEMP%\desktop-stack-whkd.log & (komorebic resize-axis vertical decrease) >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + f19                 : echo %date% %time% f19 >> %TEMP%\desktop-stack-whkd.log & (komorebic resize-axis horizontal increase) >> %TEMP%\desktop-stack-whkd.log 2>&1
+# Added from the note (10-08): gc Claude, gC Numi, ge Explorer. komorebi
+# does not manage Claude or Explorer windows (not in komorebic state), so
+# eager-focus cannot reach them:
+# - Claude: launching it again brings the open window to the front (tested).
+# - Explorer, Numi: activated by window title (AppActivate matches the end
+#   of "... - File Explorer"), else launched.
+# gc: retile after the focus: komorebi kept the half-width rect Claude had
+# in main and only fixed it once the window was focused (test 5).
+# gc: Claude has its own workspace now (komorebi.vim.json), so the same
+# form as the other apps. Caveat: tasklist also finds Claude Code (a
+# claude.exe too), so with the app closed and Claude Code running, it is
+# not launched.
+win + ctrl + alt + f20                 : echo %date% %time% f20 >> %TEMP%\desktop-stack-whkd.log & (komorebic focus-named-workspace Claude & komorebic retile & tasklist /FI "IMAGENAME eq claude.exe" | find /I "claude.exe" > nul || start "" "C:\Users\Mia Schionato\AppData\Local\AnthropicClaude\claude.exe") >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + f21                 : echo %date% %time% f21 >> %TEMP%\desktop-stack-whkd.log & (powershell -NoProfile -WindowStyle Hidden -Command "if (-not (New-Object -ComObject WScript.Shell).AppActivate('File Explorer')) { Start-Process explorer.exe }") >> %TEMP%\desktop-stack-whkd.log 2>&1
+# gC: Numi (decided in the note, 10-08). With Shift: gC is typed with Shift
+# held, so the chord arrives with it (without it, gC did nothing in test 2).
+# Floating (komorebi.vim.json), so eager-focus reaches it.
+win + ctrl + alt + shift + f22         : echo %date% %time% shift+f22 >> %TEMP%\desktop-stack-whkd.log & (komorebic eager-focus Numi.exe & tasklist /FI "IMAGENAME eq Numi.exe" | find /I "Numi.exe" > nul || start "" "C:\Users\Mia Schionato\AppData\Local\Numi\Numi.exe") >> %TEMP%\desktop-stack-whkd.log 2>&1
+# (old form, unused)
+# win + ctrl + alt + f22                 : powershell -NoProfile -WindowStyle Hidden -Command "if (-not (New-Object -ComObject WScript.Shell).AppActivate('Numi')) { Start-Process 'C:\Users\Mia Schionato\AppData\Local\Numi\Numi.exe' }"
+# mc: send the window to the Claude workspace
+win + ctrl + alt + f23                 : echo %date% %time% f23 >> %TEMP%\desktop-stack-whkd.log & (komorebic move-to-named-workspace Claude) >> %TEMP%\desktop-stack-whkd.log 2>&1
+# Test 2 results (10-08):
+# Tab / Shift+Tab in WINDOW: the last workspace, as vim's Ctrl+^ (the note,
+# option a: komorebi has no "next workspace with windows", and cycling went
+# through the empty ones)
+win + ctrl + alt + shift + f13         : echo %date% %time% shift+f13 >> %TEMP%\desktop-stack-whkd.log & (komorebic focus-last-workspace) >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + shift + f14         : echo %date% %time% shift+f14 >> %TEMP%\desktop-stack-whkd.log & (komorebic focus-last-workspace) >> %TEMP%\desktop-stack-whkd.log 2>&1
+# gw / mw: WhatsApp, in a workspace of its own. gw opens it through its link
+# (whatsapp:), which also brings an open window to the front: it stays in
+# the tray when closed, so a tasklist check would always find it (test 5).
+win + ctrl + alt + shift + f15         : echo %date% %time% shift+f15 >> %TEMP%\desktop-stack-whkd.log & (komorebic focus-named-workspace WhatsApp & komorebic retile & start "" whatsapp:) >> %TEMP%\desktop-stack-whkd.log 2>&1
+win + ctrl + alt + shift + f16         : echo %date% %time% shift+f16 >> %TEMP%\desktop-stack-whkd.log & (komorebic move-to-named-workspace WhatsApp) >> %TEMP%\desktop-stack-whkd.log 2>&1
+# g+Enter: a floating terminal (class floatterm, a float rule in komorebi.vim.json)
+win + ctrl + alt + shift + f17         : echo %date% %time% shift+f17 >> %TEMP%\desktop-stack-whkd.log & (start "" wezterm-gui.exe start --class floatterm) >> %TEMP%\desktop-stack-whkd.log 2>&1
