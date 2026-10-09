@@ -95,11 +95,18 @@
           "name": "Claude",
           "layout": "BSP",
           "workspace_rules": [
-            {
-              "kind": "Exe",
-              "id": "claude.exe",
-              "matching_strategy": "Equals"
-            }
+            [
+              {
+                "kind": "Exe",
+                "id": "claude.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Class",
+                "id": "Chrome_WidgetWin_1",
+                "matching_strategy": "Equals"
+              }
+            ]
           ]
         },
         {
@@ -169,11 +176,18 @@
     }
   ],
   "manage_rules": [
-    {
-      "kind": "Exe",
-      "id": "claude.exe",
-      "matching_strategy": "Equals"
-    }
+    [
+      {
+        "kind": "Exe",
+        "id": "claude.exe",
+        "matching_strategy": "Equals"
+      },
+      {
+        "kind": "Class",
+        "id": "Chrome_WidgetWin_1",
+        "matching_strategy": "Equals"
+      }
+    ]
   ],
   "float_rule_placement": "Center",
   "tray_and_multi_window_applications": [

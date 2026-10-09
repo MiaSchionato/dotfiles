@@ -1,0 +1,363 @@
+;; ============================================================================
+;;  NO WHKD (kanata.plain.kbd), 2026-10-09: kanata.kbd with every command whkd ran now
+;;  run by kanata itself (cmd; the cmd_allowed build, as a normal user):
+;;  komorebic-no-console.exe and programs straight; what needs logic (is
+;;  the app running?) in nushell (nu -c), Windows paths in backticks.
+;;  cmd.exe could not take the quotes kanata sends. Win+O reloads (lrld).
+;;  Kanata Configuration - Ported from AutoHotkey (~/Documents/AutoHotkey)
+;;
+;;  Features:
+;;    1. CapsLock Dual-Role:
+;;       - Tap: Esc
+;;       - Shift + Tap: Delete
+;;       - Hold: caps_nav layer (vim arrows h/j/k/l + dead keys e/`/i/n/c)
+;;    2. macOS-Style Dead Keys (Accents):
+;;       - Triggerable via CapsLock + [e, `, i, n, c] OR Alt + [e, `, i, n, c]
+;;       - Acute (e): á, é, í, ó, ú, Á, É, Í, Ó, Ú, ç, Ç
+;;       - Grave (`): à, è, ì, ò, ù, À, È, Ì, Ò, Ù
+;;       - Circumflex (i): â, ê, î, ô, û, Â, Ê, Î, Ô, Û
+;;       - Tilde (n): ã, õ, ñ, Ã, Õ, Ñ
+;;       - Cedilla (c): ç, Ç
+;;    3. Windows / Super as Command (Cmd):
+;;       - Tap Left Win: Alt+Space (app launcher, suppresses Windows Start menu)
+;;       - Hold Left Win: cmd_layer
+;;         * Cmd+A -> Ctrl+A
+;;         * Cmd+C -> Ctrl+C (Shift+Cmd+C -> Komorebi clear-session-float)
+;;         * Cmd+X -> Ctrl+X
+;;         * Cmd+V -> Ctrl+V
+;;         * Cmd+Z -> Ctrl+Z / Ctrl+Shift+Z
+;;         * Cmd+T -> Ctrl+T
+;;         * Cmd+W -> Alt+F4 (close window)
+;;         * Cmd+Tab -> Alt+Tab (window switcher)
+;;         * Passthrough Komorebi navigation (Win+1..5, Win+hjkl, etc.)
+;;    4. Ctrl Key Additions:
+;;       - Ctrl+H -> Ctrl+Win+Left (Virtual Desktop left)
+;;       - Ctrl+L -> Ctrl+Win+Right (Virtual Desktop right)
+;;       - Ctrl+V -> Win+V (Windows Clipboard History)
+;; ============================================================================
+
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold yes
+  ;; kanata runs the window commands itself (cmd): whkd is gone.
+  danger-enable-cmd yes
+)
+
+;; ----------------------------------------------------------------------------
+;; Source Keyboard Layout (Standard 60% ANSI physical keys)
+;; ----------------------------------------------------------------------------
+(defsrc
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl f13 lalt           spc            ralt rmet rctl
+)
+
+;; ----------------------------------------------------------------------------
+;; Virtual keys
+;; ----------------------------------------------------------------------------
+;; Alt held down across several key presses: Win+Tab presses it, releasing
+;; Win releases it (see @win and @w-tab).
+(defvirtualkeys
+  vk-alt lalt
+)
+
+;; ----------------------------------------------------------------------------
+;; Aliases & Macros
+;; ----------------------------------------------------------------------------
+(defalias
+  ;; CapsLock: Tap = Esc, Shift+Tap = Delete, Hold = caps_nav layer.
+  ;; Esc is sent directly now; the Premiere variant lives in @cap-del and
+  ;; komokana picks between them, so no AutoHotkey round trip.
+  ;; Shift+CapsLock: a tap is still Delete, but held it is caps_nav too, so
+  ;; Shift+Caps+C gives Ç (it was a plain Delete, held or not; 2026-10-08).
+  cap (fork
+        (tap-hold-press 200 200 esc (layer-while-held caps_nav))
+        (tap-hold-press 200 200 del (layer-while-held caps_nav))
+        (lsft rsft))
+
+  ;; Left Win / Cmd: Tap = Alt+Space (launcher), Hold = cmd_layer.
+  ;; Releasing it also lets go of the Alt that Win+Tab holds (@w-tab).
+  win (tap-hold-press 200 200 A-spc
+        (multi (layer-while-held cmd_layer) (on-release release-vkey vk-alt)))
+
+  ;; --- Per-application variants, selected by komokana ---
+  ;; komokana swaps the BASE layer on focus change, so each variant is the
+  ;; base layer with one alias replaced. Everything else stays identical.
+
+  ;; CapsLock inside Premiere: tap sends Delete instead of Esc. Hold and
+  ;; Shift+tap are unchanged.
+  cap-del (fork
+            (tap-hold-press 200 200 del (layer-while-held caps_nav))
+            (tap-hold-press 200 200 del (layer-while-held caps_nav))
+            (lsft rsft))
+
+  ;; Left Win inside Zen: same tap (launcher), but the hold reaches a cmd
+  ;; layer whose W closes a tab instead of a window.
+  win-zen (tap-hold-press 200 200 A-spc
+            (multi (layer-while-held cmd_zen) (on-release release-vkey vk-alt)))
+
+  ;; Win+W outside a browser. whkd already maps this chord to komorebic
+  ;; close, so kanata never runs a command itself.
+  w-kill (cmd komorebic-no-console.exe close)
+
+  ;; Alt+R / Alt+P: komorebi retile / pause (whkd had them before).
+  a-retile (cmd komorebic-no-console.exe retile)
+  a-pause (cmd komorebic-no-console.exe toggle-pause)
+  ;; Left Alt: normal Alt + activates alt_accent layer for dead keys
+  alt (multi lalt (layer-while-held alt_accent))
+
+  ;; Left Ctrl: normal Ctrl + activates ctrl_nav layer
+  ctl (multi lctl (layer-while-held ctrl_nav))
+
+  ;; Clipboard History: releases Ctrl and sends Win+V
+  clip (multi (release-key lctl) M-v)
+
+  ;; Command layer aliases
+  undo  (fork C-z C-S-z (lsft rsft))
+  ;; Win+Q: komorebic close; with the Win+Tab switcher open (vk-alt held),
+  ;; Delete instead, which closes the window selected there and keeps the
+  ;; switcher open (Mia, 2026-10-08).
+  m-q (switch
+        ((input virtual vk-alt)) del break
+        () (cmd komorebic-no-console.exe close) break)
+  ;; w-cls A-f4 ;; for now, it should be ctrl + w when on zen browser
+  ;; Win+W closes the window with Alt+F4 straight from kanata (Mia, 2026-10-07):
+  ;; komorebic close failed on windows komorebi does not manage (floating
+  ;; Adobe apps). cmd_zen still sends Ctrl+W, closing a tab in Zen.
+  w-cls A-f4
+  ;; Win+Tab as macOS Cmd+Tab (Mia, 2026-10-08): the first Tab presses Alt
+  ;; and keeps it down while Win is held, so each Tab steps through Windows'
+  ;; Alt+Tab switcher and releasing Win picks the window, no Enter. It was
+  ;; Ctrl+Alt+Tab, the sticky switcher that waits for Enter. Win+Shift+Tab
+  ;; goes back (Shift passes through).
+  ;; The Tab waits 5 ms for the Alt: sent together, the first Tab went out
+  ;; before Alt was down (a plain Tab), and the switcher took a second one.
+  w-tab (multi (on-press press-vkey vk-alt) (macro 5 tab))
+  c-cpy (fork C-c M-S-c (lsft rsft))
+  expl M-e
+  ;; Win+D stays show-desktop; Win+Shift+D reaches whkd instead.
+  m-desk (fork M-d (cmd komorebic-no-console.exe move-to-named-workspace AfterFX) (lsft rsft))
+  m-r (fork (cmd nu -c "komorebic-no-console.exe focus-named-workspace AfterFX; if (ps | where name == 'AfterFX.exe' | is-empty) { start `C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\AfterFX.exe` }") (cmd komorebic-no-console.exe move-to-named-workspace Resolve) (lsft rsft)) ;; Resolve
+  m-p (fork (cmd nu -c "komorebic-no-console.exe focus-named-workspace Premiere; if (ps | where name == 'Adobe Premiere Pro.exe' | is-empty) { start `C:\Program Files\Adobe\Adobe Premiere Pro 2026\Adobe Premiere Pro.exe` }") (cmd komorebic-no-console.exe move-to-named-workspace Premiere) (lsft rsft)) ;; Premiere
+  m-[ (cmd komorebic-no-console.exe cycle-focus previous) ;; cycle-focus
+  m-] (cmd komorebic-no-console.exe cycle-focus next) 
+  
+
+  m-f (fork (cmd komorebic-no-console.exe toggle-float) (cmd komorebic-no-console.exe toggle-monocle) (lsft rsft))
+  ;; Vim keys move windows focus
+  m-h (fork (cmd komorebic-no-console.exe focus left) (cmd komorebic-no-console.exe move left) (lsft rsft)) ;; using macro to avoid kanata error 
+  m-j (fork (cmd komorebic-no-console.exe focus down) (cmd komorebic-no-console.exe move down) (lsft rsft))
+  m-k (fork (cmd komorebic-no-console.exe focus up) (cmd komorebic-no-console.exe move up) (lsft rsft))
+  m-l (fork (cmd komorebic-no-console.exe focus right) (cmd komorebic-no-console.exe move right) (lsft rsft))
+
+  m-i (macro C-A-M-i) ;; toggle-shortcuts (?)
+  m-o (fork lrld (cmd komorebic-no-console.exe reload-configuration) (lsft rsft)) ;; Reload whkd and Komorebi 
+
+  m-1 (fork (cmd komorebic-no-console.exe focus-monitor 2) (cmd komorebic-no-console.exe move-to-monitor 2) (lsft rsft)) ;; Workspaces
+  m-2 (fork (cmd komorebic-no-console.exe focus-monitor 0) (cmd komorebic-no-console.exe move-to-monitor 0) (lsft rsft))
+  m-3 (fork (cmd komorebic-no-console.exe focus-monitor 1) (cmd komorebic-no-console.exe move-to-monitor 1) (lsft rsft))
+  m-4 (macro C-A-M-4)
+  m-5 (macro C-A-M-5)
+  m-6 (macro C-A-M-6)
+  m-7 (macro C-A-M-7)
+  m-8 (macro C-A-M-8)
+  m-9 (macro C-A-M-9)
+  m-0 (macro C-A-M-0)
+
+
+  m-term (fork (cmd "C:\Program Files\WezTerm\wezterm-gui.exe") (cmd komorebic-no-console.exe promote) (lsft rsft)) ;; terminal
+  m-b (fork (cmd nu -c "komorebic-no-console.exe focus-named-workspace Browser; if (ps | where name == 'zen.exe' | is-empty) { start `C:\Program Files\Zen Browser\zen.exe` }") (cmd komorebic-no-console.exe move-to-named-workspace Browser) (lsft rsft)) ;; Browser
+  m-n (fork (cmd nu -c "komorebic-no-console.exe focus-named-workspace Nvim; if (ps | where name == 'nvim-wezterm.exe' | is-empty) { ^`C:\Windows\System32\cmd.exe` /c start '' `C:\Program Files\WezTerm\nvim-wezterm.exe` start -- wsl --cd ~ -e fish -c nvim }") (cmd komorebic-no-console.exe move-to-named-workspace Nvim) (lsft rsft)) ;; Nvim
+  m-m (cmd komorebic-no-console.exe minimize) ;; Motion (After effects)
+
+  m-, (fork (cmd komorebic-no-console.exe cycle-monitor previous) (cmd komorebic-no-console.exe cycle-move-to-monitor previous) (lsft rsft))
+  m-. (fork (cmd komorebic-no-console.exe cycle-monitor next) (cmd komorebic-no-console.exe cycle-move-to-monitor next) (lsft rsft))
+  ;; --- Dead Key Layer Triggers (One-Shot with 2000ms timeout) ---
+  os-acu (one-shot 2000 (layer-while-held acute))
+  os-grv (one-shot 2000 (layer-while-held grave))
+  os-cir (one-shot 2000 (layer-while-held circumflex))
+  os-tld (one-shot 2000 (layer-while-held tilde))
+
+  ;; --- Cedilla ---
+  ;; Ç: Shift and Alt are let go before the character goes out. With them
+  ;; still down, Alt+Shift+C did not give Ç (Caps+Shift+C did); 2026-10-08.
+  c-ced (fork (unicode ç)
+              (multi (release-key lsft) (release-key rsft) (release-key lalt)
+                     (macro 5 (unicode Ç)))
+              (lsft rsft))
+
+  ;; --- Acute Accents ---
+  a-acu (fork (unicode á) (unicode Á) (lsft rsft))
+  e-acu (fork (unicode é) (unicode É) (lsft rsft))
+  i-acu (fork (unicode í) (unicode Í) (lsft rsft))
+  o-acu (fork (unicode ó) (unicode Ó) (lsft rsft))
+  u-acu (fork (unicode ú) (unicode Ú) (lsft rsft))
+  c-acu (fork (unicode ç) (unicode Ç) (lsft rsft))
+
+  ;; --- Grave Accents ---
+  a-grv (fork (unicode à) (unicode À) (lsft rsft))
+  e-grv (fork (unicode è) (unicode È) (lsft rsft))
+  i-grv (fork (unicode ì) (unicode Ì) (lsft rsft))
+  o-grv (fork (unicode ò) (unicode Ò) (lsft rsft))
+  u-grv (fork (unicode ù) (unicode Ù) (lsft rsft))
+
+  ;; --- Circumflex Accents ---
+  a-cir (fork (unicode â) (unicode Â) (lsft rsft))
+  e-cir (fork (unicode ê) (unicode Ê) (lsft rsft))
+  i-cir (fork (unicode î) (unicode Î) (lsft rsft))
+  o-cir (fork (unicode ô) (unicode Ô) (lsft rsft))
+  u-cir (fork (unicode û) (unicode Û) (lsft rsft))
+
+  ;; --- Tilde Accents ---
+  a-tld (fork (unicode ã) (unicode Ã) (lsft rsft))
+  o-tld (fork (unicode õ) (unicode Õ) (lsft rsft))
+  n-tld (fork (unicode ñ) (unicode Ñ) (lsft rsft))
+  e-tld (fork (unicode ẽ) (unicode Ẽ) (lsft rsft))
+  ;; --- Shift inside an accent layer (Mia, 2026-10-08) ---
+  ;; Alt+E (or Caps+E) arms the accent for the next key pressed, and Shift
+  ;; counted as that key: it used up the accent and Shift+E gave a plain E.
+  ;; Shift here keeps the accent layer while held, so Alt+E, then Shift+E
+  ;; gives É (the letter's fork sees the Shift).
+  ls-acute (multi lsft (layer-while-held acute))
+  rs-acute (multi rsft (layer-while-held acute))
+  ls-grave (multi lsft (layer-while-held grave))
+  rs-grave (multi rsft (layer-while-held grave))
+  ls-circumflex (multi lsft (layer-while-held circumflex))
+  rs-circumflex (multi rsft (layer-while-held circumflex))
+  ls-tilde (multi lsft (layer-while-held tilde))
+  rs-tilde (multi rsft (layer-while-held tilde))
+)
+
+;; ----------------------------------------------------------------------------
+;; Base Layer (Default)
+;; ----------------------------------------------------------------------------
+(deflayer base
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  @cap a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  @ctl @win @alt          spc            ralt rmet rctl
+)
+
+;; ----------------------------------------------------------------------------
+;; Premiere (komokana: Adobe Premiere Pro.exe) - CapsLock tap = Delete
+;; ----------------------------------------------------------------------------
+(deflayer premiere
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  @cap-del a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  @ctl @win @alt          spc            ralt rmet rctl
+)
+
+;; ----------------------------------------------------------------------------
+;; Zen (komokana: zen.exe) - Win+W = close tab
+;; ----------------------------------------------------------------------------
+(deflayer zen
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  @cap a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  @ctl @win-zen @alt          spc            ralt rmet rctl
+)
+
+;; ----------------------------------------------------------------------------
+;; CapsLock Navigation & Accent Layer (Active while holding CapsLock)
+;; ----------------------------------------------------------------------------
+(deflayer caps_nav
+  @os-grv _    _    _    _    _    _    _    _    _    _    _    _    del
+  _       _    _    @os-acu _ _    _    _    @os-cir _   _    _    _    _
+  _       _    _    _    _    _    lft  down up   rght _    _    _
+  _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
+  _       _    _              _              _    _    _
+)
+
+;; ----------------------------------------------------------------------------
+;; Alt Accent Layer (Active while holding Left Alt)
+;; ----------------------------------------------------------------------------
+(deflayer alt_accent
+  @os-grv _    _    _    _    _    _    _    _    _    _    _    _    _
+  _       _    _    @os-acu @a-retile _ _ _  @os-cir _   @a-pause _ _    _
+  _       _    _    _    _    _    _    _    _    _    _    _    _
+  _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
+  _       _    _              _              _    _    _
+)
+
+;; ----------------------------------------------------------------------------
+;; Command Layer (Active while holding Left Win / Super)
+;; macOS Cmd shortcuts + Komorebi window management passthrough
+;; ----------------------------------------------------------------------------
+;; Win+` (lrld-next, in cmd_layer and cmd_zen): switch to the next config
+;; kanata was started with: kanata.vim.kbd (the vim-like modes, default)
+;; and kanata.kbd (without them). Mia, 2026-10-08.
+(deflayer cmd_layer
+  lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
+ @w-tab @m-q   @w-cls @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
+  _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
+  _      _    _               A-spc           _    _    _
+)
+
+;; ----------------------------------------------------------------------------
+;; Command Layer, Zen variant - only W differs: Ctrl+W instead of closing
+;; ----------------------------------------------------------------------------
+(deflayer cmd_zen
+  lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
+ @w-tab @m-q   C-w    @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
+  _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
+  _      _    _               A-spc           _    _    _
+)
+
+;; ----------------------------------------------------------------------------
+;; Control Navigation Layer (Active while holding Left Ctrl)
+;; ----------------------------------------------------------------------------
+(deflayer ctrl_nav
+  _      _    _    _    _    _    _    _    _    _    _    _    _    _
+  _      _    _    _    _    _    _    _    _    _    _    _    _    _
+  _      _    _    _    _    _    C-M-lft _ _  C-M-rght _  _    _
+  _      _    _    _    @clip _   _    _    _    _    _    _
+  _      _    _              _              _    _    _
+)
+
+;; ----------------------------------------------------------------------------
+;; Dead Key Layers (Activated for 1 keypress via one-shot)
+;; ----------------------------------------------------------------------------
+
+;; Acute Accent Layer: Alt+E or Caps+E then letter
+(deflayer acute
+  _      _      _      _      _      _      _      _      _      _      _      _      _      _
+  _      _      _      @e-acu _      _      _      @u-acu @i-acu @o-acu _      _      _      _
+  _      @a-acu _      _      _      _      _      _      _      _      _      _      _
+  @ls-acute      _      _      @c-acu      _      _      _      _      _      _      _      @rs-acute
+  _      _      _                    (unicode ´)          _      _      _
+)
+
+;; Grave Accent Layer: Alt+` or Caps+` then letter
+(deflayer grave
+  _      _      _      _      _      _      _      _      _      _      _      _      _      _
+  _      _      _      @e-grv _      _      _      @u-grv @i-grv @o-grv _      _      _      _
+  _      @a-grv _      _      _      _      _      _      _      _      _      _      _
+  @ls-grave      _      _      _      _      _      _      _      _      _      _      @rs-grave
+  _      _      _                    (unicode `)          _      _      _
+)
+
+;; Circumflex Accent Layer: Alt+I or Caps+I then letter
+(deflayer circumflex
+  _      _      _      _      _      _      _      _      _      _      _      _      _      _
+  _      _      _      @e-cir _      _      _      @u-cir @i-cir @o-cir _      _      _      _
+  _      @a-cir _      _      _      _      _      _      _      _      _      _      _
+  @ls-circumflex      _      _      _      _      _      _      _      _      _      _      @rs-circumflex
+  _      _      _                    (unicode ^)          _      _      _
+)
+
+;; Tilde Accent Layer: Alt+N or Caps+N then letter
+(deflayer tilde
+  _      _      _      _      _      _      _      _      _      _      _      _      _      _
+  _      _      _      @e-tld _      _      _      _      _      @o-tld _      _      _      _
+  _      @a-tld _      _      _      _      _      _      _      _      _      _      _
+  @ls-tilde      _      _      _      _      _      @n-tld      _      _      _      _      @rs-tilde
+  _      _      _                    (unicode ~)          _      _      _
+)
