@@ -43,25 +43,31 @@ bars:
 
 widgets:
   # The vim-like mode (2026-10-08): one letter (I in INSERT).
-  # mode.cmd reads the layer komokana writes for kanata.
+  # 2026-10-09: a widget of its own (yasb-src, kanata_mode.py) listens to
+  # kanata's TCP server (port 9999) and changes the letter on every layer
+  # change, no polling and no komokana in between. Layers not listed in
+  # modes (CapsLock, the accents, Win held) keep the last letter.
   # Two looks in the same place: the label is a small round badge, the
   # alternative label the letter alone (as the workspace names); a left
   # click switches between them (Mia, 2026-10-08).
   vim_mode:
-    type: "yasb.custom.CustomWidget"
+    type: "yasb.kanata_mode.KanataModeWidget"
     options:
-      label: "{data}"
-      label_alt: "{data}"
+      label: "{mode}"
+      label_alt: "{mode}"
       class_name: "vim-mode"
+      port: 9999
+      modes:
+        base: "I"
+        premiere: "I"
+        zen: "I"
+        window: "W"
+        goto: "G"
+        move: "M"
+        resize: "R"
+        cmdline: ":"
       callbacks:
         on_left: "toggle_label"
-      exec_options:
-        # Forward slashes and the short path: yasb splits the command like a
-        # Unix shell, which ate the backslashes (test 4: no widget).
-        run_cmd: 'cmd /c C:/Users/MIASCH~1/.config/yasb/mode.cmd'
-        run_interval: 250
-        return_format: "string"
-        hide_empty: true
 
   komorebi_workspaces:
     type: "komorebi.workspaces.WorkspaceWidget"
