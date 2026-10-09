@@ -18,3 +18,17 @@ github-copilot/
 
 # yasb writes its log next to its config.
 yasb/*.log
+
+# Copies made before each change to the desktop stack (kept locally).
+*.before-*
+*.backup-*
+*.running-*
+*.retired-*
+kanata/kanata.kbd.komokana-*
+
+# gh keeps its login token in hosts.yml.
+gh/
+
+# yasb run from its source: a git clone of its own (the kanata_mode widget is
+# on its local branch kanata-mode; a copy lives in yasb/widgets/).
+yasb-src/
