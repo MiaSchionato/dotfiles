@@ -25,7 +25,8 @@ config.default_prog = { "wsl.exe", "--cd", "~", "--exec", "fish" }
 config.color_scheme = "Tokyo Night"
 config.colors = {
   foreground = "#c0caf5",
-  background = "#1a1b26",
+  -- background = "#1a1b26", -- original
+  background = "#011627", -- nightfly bg <3
   cursor_bg = "#c0caf5",
   cursor_fg = "#1a1b26",
   cursor_border = "#c0caf5",
@@ -50,7 +51,7 @@ config.warn_about_missing_glyphs = false
 
 -- ---- window --------------------------------------------------------------
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 4 }
-config.window_background_opacity = 1.0
+config.window_background_opacity = 1
 config.window_decorations = "RESIZE"
 config.adjust_window_size_when_changing_font_size = false
 config.enable_scroll_bar = false
