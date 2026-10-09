@@ -1,12 +1,11 @@
 ;; ============================================================================
-;;  NO WHKD (kanata.cmd.kbd), 2026-10-09: kanata.vim.kbd with every command whkd ran now
+;;  NO WHKD (kanata.cmd.kbd), 2026-10-09: every command whkd used to run is now
 ;;  run by kanata itself (cmd; the cmd_allowed build, as a normal user):
 ;;  komorebic-no-console.exe and programs straight; what needs logic (is
 ;;  the app running?) in nushell (nu -c), Windows paths in backticks.
 ;;  cmd.exe could not take the quotes kanata sends. Win+O reloads (lrld).
-;;  VIM-LIKE DRAFT (kanata.vim.kbd), 2026-10-08. Not in use: a copy of
-;;  kanata.kbd with the modes of the vault note "Proposta atalhos vim-like"
-;;  (version 3). Loaded only to test, with {"ReloadFile":{...}} on port 9999.
+;;  VIM-LIKE MODES, 2026-10-08: kanata.plain.kbd plus the modes of the vault
+;;  note "Proposta atalhos vim-like" (version 3).
 ;; ============================================================================
 ;;  Kanata Configuration - Ported from AutoHotkey (~/Documents/AutoHotkey)
 ;;
@@ -248,8 +247,8 @@
   ;;  Vim-like modes (vault: "Proposta atalhos vim-like", version 3)
   ;;  INSERT = no mode layer (the base, as today). WINDOW = vk-window held.
   ;;  RESIZE = vk-resize held on top of WINDOW. g / m = one key on goto / move.
-  ;;  Window commands are the same hidden Ctrl+Alt+Win chords whkd runs today;
-  ;;  the new ones use F13-F19 (whkdrc.vim).
+  ;;  Window commands are cmd actions kanata runs itself (no whkd since
+  ;;  2026-10-09).
   ;; =========================================================================
   enter-win (on-press press-vkey vk-window)
   ;; i, or a mouse click: out of every mode, back to INSERT.
@@ -402,8 +401,8 @@
 ;; macOS Cmd shortcuts + Komorebi window management passthrough
 ;; ----------------------------------------------------------------------------
 ;; Win+` (lrld-next, in cmd_layer and cmd_zen): switch to the next config
-;; kanata was started with: kanata.vim.kbd (the vim-like modes, default)
-;; and kanata.kbd (without them). Mia, 2026-10-08.
+;; kanata was started with: kanata.cmd.kbd (the vim-like modes, default)
+;; and kanata.plain.kbd (without them). Mia, 2026-10-08.
 (deflayer cmd_layer
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
  @w-tab @m-q   @w-cls @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
