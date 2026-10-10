@@ -136,6 +136,9 @@
   ;; before Alt was down (a plain Tab), and the switcher took a second one.
   w-tab (multi (on-press press-vkey vk-alt) (macro 5 tab))
   c-cpy (fork C-c M-S-c (lsft rsft))
+  ;; Win+S saves (Ctrl+S); Win+Shift+S is Windows' screenshot (Snipping
+  ;; Tool), which Ctrl+Shift+S used to take.
+  c-save (fork C-s M-S-s (lsft rsft))
   expl M-e
   ;; Win+D stays show-desktop; Win+Shift+D reaches whkd instead.
   m-desk (fork M-d (cmd komorebic-no-console.exe move-to-named-workspace AfterFX) (lsft rsft))
@@ -295,7 +298,7 @@
 (deflayer cmd_layer
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
  @w-tab @m-q   @w-cls @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
-  _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
 )
@@ -306,7 +309,7 @@
 (deflayer cmd_zen
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
  @w-tab @m-q   C-w    @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
-  _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
 )

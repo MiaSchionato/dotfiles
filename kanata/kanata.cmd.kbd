@@ -76,6 +76,15 @@
   vk-resize (layer-while-held resize)
   ;; COMMAND (":"): the keys reach the launcher; Esc or Enter back to WINDOW.
   vk-cmd (layer-while-held cmdline)
+  ;; HINT (Space in WINDOW): a letter over each window, to pick one.
+  vk-hint (layer-while-held hint)
+  ;; Letting go of Win: if Win+Tab held Alt, release it and land in WINDOW.
+  ;; WINDOW comes only now: turned on while Win was still held, its layer
+  ;; went on top of Win's and took the next Tabs.
+  vk-win-up (switch
+              ((input virtual vk-alt))
+                (multi (on-press release-vkey vk-alt) (on-press press-vkey vk-window)) break
+              () (on-press release-vkey vk-alt) break)
 )
 
 ;; ----------------------------------------------------------------------------
@@ -93,9 +102,10 @@
         (lsft rsft))
 
   ;; Left Win / Cmd: Tap = Alt+Space (launcher), Hold = cmd_layer.
-  ;; Releasing it also lets go of the Alt that Win+Tab holds (@w-tab).
+  ;; Releasing it also lets go of the Alt that Win+Tab holds (@w-tab), and
+  ;; then lands in WINDOW (vk-win-up).
   win (tap-hold-press 200 200 (on-press press-vkey vk-window)
-        (multi (layer-while-held cmd_layer) (on-release release-vkey vk-alt)))
+        (multi (layer-while-held cmd_layer) (on-release tap-vkey vk-win-up)))
 
   ;; --- Per-application variants, selected by komokana ---
   ;; komokana swaps the BASE layer on focus change, so each variant is the
@@ -111,7 +121,7 @@
   ;; Left Win inside Zen: same tap (launcher), but the hold reaches a cmd
   ;; layer whose W closes a tab instead of a window.
   win-zen (tap-hold-press 200 200 (on-press press-vkey vk-window)
-            (multi (layer-while-held cmd_zen) (on-release release-vkey vk-alt)))
+            (multi (layer-while-held cmd_zen) (on-release tap-vkey vk-win-up)))
 
   ;; Win+W outside a browser. whkd already maps this chord to komorebic
   ;; close, so kanata never runs a command itself.
@@ -149,8 +159,13 @@
   ;; goes back (Shift passes through).
   ;; The Tab waits 5 ms for the Alt: sent together, the first Tab went out
   ;; before Alt was down (a plain Tab), and the switcher took a second one.
+  ;; Letting go of Win then lands in WINDOW, whatever the mode before (Mia,
+  ;; 2026-10-09; see vk-win-up).
   w-tab (multi (on-press press-vkey vk-alt) (macro 5 tab))
   c-cpy (fork C-c M-S-c (lsft rsft))
+  ;; Win+S saves (Ctrl+S); Win+Shift+S is Windows' screenshot (Snipping
+  ;; Tool), which Ctrl+Shift+S used to take.
+  c-save (fork C-s M-S-s (lsft rsft))
   expl M-e
   ;; Win+D stays show-desktop; Win+Shift+D reaches whkd instead.
   m-desk (fork M-d (cmd komorebic-no-console.exe move-to-named-workspace AfterFX) (lsft rsft))
@@ -253,9 +268,9 @@
   enter-win (on-press press-vkey vk-window)
   ;; i, or a mouse click: out of every mode, back to INSERT.
   to-ins (multi (on-press release-vkey vk-resize) (on-press release-vkey vk-cmd)
-          (on-press release-vkey vk-window))
+          (on-press release-vkey vk-hint) (on-press release-vkey vk-window))
   click-ins (multi mlft (on-press release-vkey vk-resize) (on-press release-vkey vk-cmd)
-              (on-press release-vkey vk-window))
+              (on-press release-vkey vk-hint) (on-press release-vkey vk-window))
   ;; ":" = the launcher (Alt+Space) in COMMAND mode, as vim's command line:
   ;; the keys reach the launcher, and Esc (cancel) or Enter (open) go back to
   ;; WINDOW (note, test 1). Shift is let go first, or the launcher would get
@@ -287,6 +302,26 @@
   rs-goto (multi rsft (layer-while-held goto))
   ls-move (multi lsft (layer-while-held move))
   rs-move (multi rsft (layer-while-held move))
+  ;; Space: HINT, a window picker (on w it was too close to Win+W, close). The yasb mode widget sees the hint layer
+  ;; (kanata's TCP) and puts a letter (a s d f j k l ;) over each window of the
+  ;; focused monitor. The letter pushes "hint <n>" to yasb, which focuses that
+  ;; window; back to INSERT. Esc (the CapsLock tap) back to WINDOW.
+  w-hint (multi (on-press release-vkey vk-window) (on-press press-vkey vk-hint))
+  hint-0 (multi (push-msg "hint 0") (on-press release-vkey vk-hint))
+  hint-1 (multi (push-msg "hint 1") (on-press release-vkey vk-hint))
+  hint-2 (multi (push-msg "hint 2") (on-press release-vkey vk-hint))
+  hint-3 (multi (push-msg "hint 3") (on-press release-vkey vk-hint))
+  hint-4 (multi (push-msg "hint 4") (on-press release-vkey vk-hint))
+  hint-5 (multi (push-msg "hint 5") (on-press release-vkey vk-hint))
+  hint-6 (multi (push-msg "hint 6") (on-press release-vkey vk-hint))
+  hint-7 (multi (push-msg "hint 7") (on-press release-vkey vk-hint))
+  hint-back (multi (on-press release-vkey vk-hint) (on-press press-vkey vk-window))
+  hint-cap (tap-hold-press 200 200 @hint-back (layer-while-held caps_nav))
+  ;; f: Vimium's f, by hunt-and-peck (hap): a letter on each button of the
+  ;; window in focus; typing it clicks. Back to INSERT first, so the letters
+  ;; reach hap instead of WINDOW's keys.
+  w-hap (multi (on-press release-vkey vk-window)
+               (cmd "C:\Users\Mia Schionato\AppData\Local\Programs\HuntAndPeck\hap.exe" /hint))
   r-mode (on-press press-vkey vk-resize)
   r-exit (on-press release-vkey vk-resize)
   ;; goto: where g takes you (focus, or launch if closed: whkd does that).
@@ -312,7 +347,10 @@
   go-fterm (cmd "C:\Program Files\WezTerm\wezterm-gui.exe" start --class floatterm)
   w-numi (cmd nu -c "komorebic-no-console.exe eager-focus Numi.exe; if (ps | where name == 'Numi.exe' | is-empty) { start `C:\Users\Mia Schionato\AppData\Local\Numi\Numi.exe` }")
   ;; e alone = Explorer (a float too; note, round 4). gd stays: a place.
-  go-exp (cmd nu -c "if (komorebic-no-console.exe state | str contains 'explorer.exe') { komorebic-no-console.exe eager-focus explorer.exe } else { start `C:\Windows\explorer.exe` }")
+  ;; e: the Explorer (a float) comes HERE: if one is open somewhere, focus it
+  ;; and move it back to the workspace you were on (Mia, 2026-10-09: it used
+  ;; to take you to its workspace); else open one.
+  go-exp (cmd nu -c "let m = (komorebic-no-console.exe query focused-monitor-index | str trim); let w = (komorebic-no-console.exe query focused-workspace-index | str trim); if (komorebic-no-console.exe state | str contains 'explorer.exe') { komorebic-no-console.exe eager-focus explorer.exe; komorebic-no-console.exe move-to-monitor-workspace $m $w } else { start `C:\Windows\explorer.exe` }")
   go-desk M-d
   ;; move: where m sends the focused window.
   mv-1 (cmd komorebic-no-console.exe move-to-monitor 2)
@@ -406,7 +444,7 @@
 (deflayer cmd_layer
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
  @w-tab @m-q   @w-cls @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
-  _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
   _
@@ -418,7 +456,7 @@
 (deflayer cmd_zen
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
  @w-tab @m-q   C-w    @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
-  _     C-a   C-s   @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
   _
@@ -487,11 +525,11 @@
 ;; (XX): here letters never reach the app. _ = as in the layer below (Win,
 ;; CapsLock, Shift, Ctrl, Alt).
 (deflayer window
-  XX     XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  XX     @m-1  @m-2  @m-3  XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
   @w-cyc @w-q  XX    @go-exp @r-mode @go-term XX XX @to-ins @m-o XX   XX    XX    XX
-  _      XX    XX    XX    XX    @g-pre @m-h @m-j  @m-k  @m-l  @w-colon XX  @go-fterm
+  _      XX    XX    XX    @w-hap @g-pre @m-h @m-j @m-k  @m-l  @w-colon XX  @go-fterm
   _      XX    @w-q  @w-numi XX  XX    XX    @m-pre XX   XX    XX    _
-  _      _     _                 XX                _     _     _
+  _      _     _                 @w-hint           _     _     _
   @click-ins
 )
 
@@ -512,6 +550,17 @@
   XX     @mv-ae XX   XX    XX    @mv-main @mv-1 XX XX    @mv-3 XX    XX    XX
   @ls-move XX  XX    @mv-claude XX @mv-zen @mv-nvim XX XX XX  XX    @rs-move
   XX     _     XX                XX                XX    XX    XX
+  @click-ins
+)
+
+;; HINT (Space in WINDOW): a s d f j k l ; pick a window (the letters yasb shows);
+;; Esc (CapsLock) back to WINDOW, i to INSERT.
+(deflayer hint
+  XX     XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  XX     XX    XX    XX    XX    XX    XX    XX    @to-ins XX  XX    XX    XX    XX
+  @hint-cap @hint-0 @hint-1 @hint-2 @hint-3 XX XX @hint-4 @hint-5 @hint-6 @hint-7 XX XX
+  XX     XX    XX    XX    XX    XX    XX    XX    XX    XX    XX    XX
+  XX     XX    XX                XX                XX    XX    XX
   @click-ins
 )
 
