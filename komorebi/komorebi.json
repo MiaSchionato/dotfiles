@@ -3,17 +3,17 @@
   "app_specific_configuration_path": "$Env:USERPROFILE/.config/komorebi/applications.json",
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
-  "default_workspace_padding": 1,
-  "default_container_padding": 1,
+  "default_workspace_padding": 0,
+  "default_container_padding": 0,
   "border": true,
-  "border_width": 1,
+  "border_width": 3,
   "border_offset": 0,
   "border_colours": {
-    "single": "#7aa2f7",
+    "single": "#3a86ff",
     "stack": "#9ece6a",
     "monocle": "#bb9af7",
     "floating": "#e0af68",
-    "unfocused": "#414868"
+    "unfocused": "#1d3b53"
   },
   "animation": {
     "enabled": true,
@@ -29,8 +29,8 @@
   },
   "monitors": [
     {
-      "workspace_padding": 1,
-      "container_padding": 1,
+      "workspace_padding": 0,
+      "container_padding": 0,
       "workspaces": [
         {
           "name": "main",
@@ -123,8 +123,8 @@
       ]
     },
     {
-      "workspace_padding": 1,
-      "container_padding": 1,
+      "workspace_padding": 0,
+      "container_padding": 0,
       "workspaces": [
         {
           "name": "right",
@@ -133,8 +133,8 @@
       ]
     },
     {
-      "workspace_padding": 1,
-      "container_padding": 1,
+      "workspace_padding": 0,
+      "container_padding": 0,
       "workspaces": [
         {
           "name": "left",
@@ -154,11 +154,18 @@
       "id": "Adobe Premiere Pro.exe",
       "matching_strategy": "Equals"
     },
-    {
-      "kind": "Exe",
-      "id": "AfterFX.exe",
-      "matching_strategy": "Equals"
-    },
+    [
+      {
+        "kind": "Exe",
+        "id": "AfterFX.exe",
+        "matching_strategy": "Equals"
+      },
+      {
+        "kind": "Class",
+        "id": "AE_CApplication",
+        "matching_strategy": "DoesNotStartWith"
+      }
+    ],
     {
       "kind": "Exe",
       "id": "Epidemic Sound.exe",
