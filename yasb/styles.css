@@ -100,3 +100,7 @@ QToolTip,
   margin: 0;
   padding: 0 2px;
 }
+
+/* Todoist: the next task with a time; beige once its time has come. */
+.todoist .label { color: #82aaff; padding: 0 6px; }
+.todoist .label.due { color: #ecc48d; }

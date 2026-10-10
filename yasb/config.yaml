@@ -39,7 +39,7 @@ bars:
     widgets:
       left: ["vim_mode", "komorebi_workspaces", "media"]
       center: ["active_window"]
-      right: ["systray", "memory", "cpu", "clock", "notifications"]
+      right: ["todoist", "systray", "memory", "cpu", "clock", "notifications"]
 
 widgets:
   # The vim-like mode (2026-10-08): one letter (I in INSERT).
@@ -66,8 +66,34 @@ widgets:
         move: "M"
         resize: "R"
         cmdline: ":"
+        hint: "F"
+      # Space in WINDOW: a letter over each window of this monitor, to pick one
+      # (kanata's hint layer; the letter pushes "hint <n>").
+      hints:
+        keys: ["a", "s", "d", "f", "j", "k", "l", ";"]
+      # kanata's base layer by the app in focus (2026-10-09, in place of
+      # komokana, which kept losing komorebi's focus events). Premiere and
+      # After Effects: CapsLock tap = Delete. Zen: Win+W closes a tab.
+      app_layers:
+        "Adobe Premiere Pro.exe": "premiere"
+        "AfterFX.exe": "premiere"
+        "zen.exe": "zen"
       callbacks:
         on_left: "toggle_label"
+
+  # The next Todoist task with a time today and how long until it (2026-10-09,
+  # yasb-src: todoist_reminders.py). When its time comes, a small card opens
+  # under the bar until answered: Done, +10 min or Close. A click opens it.
+  # The token is Neovim's (nvim-data\todoist_token).
+  todoist:
+    type: "yasb.todoist_reminders.TodoistRemindersWidget"
+    options:
+      label: "{task} · {when}"
+      label_max_length: 36
+      class_name: "todoist"
+      # Played when a card opens on its own ("" = silent). Mia, 2026-10-09:
+      # the calendar chime was too quiet, an alarm instead.
+      sound: 'C:\Windows\Media\Alarm05.wav'
 
   komorebi_workspaces:
     type: "komorebi.workspaces.WorkspaceWidget"
