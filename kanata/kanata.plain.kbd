@@ -142,6 +142,18 @@
   glance (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Browser' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Browser }")
                 (on-release tap-vkey vk-glance-end))
 
+  ;; The same quick look for the other workspaces: CapsLock + V (Nvim; N is the
+  ;; tilde), P (Premiere), R (AfterFX), G (Scratchpad). Same keys as the Win
+  ;; layer, where they GO to the workspace instead of just looking.
+  gl-nv (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Nvim' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Nvim }")
+                (on-release tap-vkey vk-glance-end))
+  gl-pr (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Premiere' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Premiere }")
+                (on-release tap-vkey vk-glance-end))
+  gl-af (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'AfterFX' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace AfterFX }")
+                (on-release tap-vkey vk-glance-end))
+  gl-sp (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Scratchpad' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Scratchpad }")
+                (on-release tap-vkey vk-glance-end))
+
   alt (multi lalt (layer-while-held alt_accent))
 
   ;; Left Ctrl: normal Ctrl + activates ctrl_nav layer
@@ -326,9 +338,9 @@
 ;; ----------------------------------------------------------------------------
 (deflayer caps_nav
   @os-grv _    _    _    _    _    _    _    _    _    _    _    _    del
-  _       _    _    @os-acu _ _    _    _    @os-cir _   _    _    _    _
-  _       _    _    _    _    _    lft  down up   rght _    _    _
-  _       _    _    @c-ced _  @glance @os-tld _ _    _    _    _
+  _    _    _    @os-acu    @gl-af    _    _    _    @os-cir    _    @gl-pr    _    _    _
+  _    _    _    _    _    @gl-sp    lft    down    up    rght    _    _    _
+  _    _    _    @c-ced    @gl-nv    @glance    @os-tld    _    _    _    _    _
   _       _    _              _              _    _    _
   _
   _
