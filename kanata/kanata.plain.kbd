@@ -61,6 +61,7 @@
 ;; Win releases it (see @win and @w-tab).
 (defvirtualkeys
   vk-alt lalt
+  vk-win f24
 )
 
 ;; ----------------------------------------------------------------------------
@@ -80,7 +81,7 @@
   ;; Left Win / Cmd: Tap = Alt+Space (launcher), Hold = cmd_layer.
   ;; Releasing it also lets go of the Alt that Win+Tab holds (@w-tab).
   win (tap-hold-press 200 200 A-spc
-        (multi (layer-while-held cmd_layer) (on-release release-vkey vk-alt)))
+        (multi (layer-while-held cmd_layer) (on-press press-vkey vk-win) (on-release release-vkey vk-alt) (on-release release-vkey vk-win)))
 
   ;; --- Per-application variants, selected by komokana ---
   ;; komokana swaps the BASE layer on focus change, so each variant is the
@@ -96,7 +97,7 @@
   ;; Left Win inside Zen: same tap (launcher), but the hold reaches a cmd
   ;; layer whose W closes a tab instead of a window.
   win-zen (tap-hold-press 200 200 A-spc
-            (multi (layer-while-held cmd_zen) (on-release release-vkey vk-alt)))
+            (multi (layer-while-held cmd_zen) (on-press press-vkey vk-win) (on-release release-vkey vk-alt) (on-release release-vkey vk-win)))
 
   ;; Win+W outside a browser. whkd already maps this chord to komorebic
   ;; close, so kanata never runs a command itself.
@@ -121,7 +122,7 @@
   ;; switcher open (Mia, 2026-10-08).
   m-q (switch
         ((input virtual vk-alt)) del break
-        () (cmd komorebic-no-console.exe close) break)
+        () (macro f23) break)
   ;; w-cls A-f4 ;; for now, it should be ctrl + w when on zen browser
   ;; Win+W closes the window with Alt+F4 straight from kanata (Mia, 2026-10-07):
   ;; komorebic close failed on windows komorebi does not manage (floating
