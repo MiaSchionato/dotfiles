@@ -52,6 +52,10 @@
   caps a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   lctl f13 lalt           spc            ralt rmet rctl
+  ;; Win + mouse buttons (see vk-lclick / vk-rclick). On Windows kanata only starts
+  ;; handling the mouse after a restart, not a reload.
+  mlft
+  mrgt
 )
 
 ;; ----------------------------------------------------------------------------
@@ -62,12 +66,26 @@
 (defvirtualkeys
   vk-alt lalt
   vk-win f24
+  ;; Win + left / right click become these keys (kanata releases them after
+  ;; ~20 ms), so windows.ahk gets ONE event in order and the program under the
+  ;; cursor never sees the click.
+  vk-lclick f20
+  vk-rclick f21
 )
 
 ;; ----------------------------------------------------------------------------
 ;; Aliases & Macros
 ;; ----------------------------------------------------------------------------
 (defalias
+  ;; Win + mouse buttons inside the Win layers; with the Win+Tab switcher open
+  ;; (vk-alt held) they are normal clicks, to pick the window there.
+  win-lclick (switch
+               ((input virtual vk-alt)) mlft break
+               () (multi (on-press press-vkey vk-lclick) (on-release release-vkey vk-lclick)) break)
+  win-rclick (switch
+               ((input virtual vk-alt)) mrgt break
+               () (multi (on-press press-vkey vk-rclick) (on-release release-vkey vk-rclick)) break)
+
   ;; CapsLock: Tap = Esc, Shift+Tap = Delete, Hold = caps_nav layer.
   ;; Esc is sent directly now; the Premiere variant lives in @cap-del and
   ;; komokana picks between them, so no AutoHotkey round trip.
@@ -253,6 +271,8 @@
   @cap a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win @alt          spc            ralt rmet rctl
+  _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -264,6 +284,8 @@
   @cap-del a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win @alt          spc            ralt rmet rctl
+  _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -275,6 +297,8 @@
   @cap a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win-zen @alt          spc            ralt rmet rctl
+  _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -286,6 +310,8 @@
   _       _    _    _    _    _    lft  down up   rght _    _    _
   _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
   _       _    _              _              _    _    _
+  _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -297,6 +323,8 @@
   _       _    _    _    _    _    _    _    _    _    _    _    _
   _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
   _       _    _              _              _    _    _
+  _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -312,6 +340,8 @@
   _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
+  @win-lclick
+  @win-rclick
 )
 
 ;; ----------------------------------------------------------------------------
@@ -323,6 +353,8 @@
   _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
+  @win-lclick
+  @win-rclick
 )
 
 ;; ----------------------------------------------------------------------------
@@ -334,6 +366,8 @@
   _      _    _    _    _    _    C-M-lft _ _  C-M-rght _  _    _
   _      _    _    _    @clip _   _    _    _    _    _    _
   _      _    _              _              _    _    _
+  _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -347,6 +381,8 @@
   _      @a-acu _      _      _      _      _      _      _      _      _      _      _
   @ls-acute      _      _      @c-acu      _      _      _      _      _      _      _      @rs-acute
   _      _      _                    (unicode ´)          _      _      _
+  _
+  _
 )
 
 ;; Grave Accent Layer: Alt+` or Caps+` then letter
@@ -356,6 +392,8 @@
   _      @a-grv _      _      _      _      _      _      _      _      _      _      _
   @ls-grave      _      _      _      _      _      _      _      _      _      _      @rs-grave
   _      _      _                    (unicode `)          _      _      _
+  _
+  _
 )
 
 ;; Circumflex Accent Layer: Alt+I or Caps+I then letter
@@ -365,6 +403,8 @@
   _      @a-cir _      _      _      _      _      _      _      _      _      _      _
   @ls-circumflex      _      _      _      _      _      _      _      _      _      _      @rs-circumflex
   _      _      _                    (unicode ^)          _      _      _
+  _
+  _
 )
 
 ;; Tilde Accent Layer: Alt+N or Caps+N then letter
@@ -374,4 +414,6 @@
   _      @a-tld _      _      _      _      _      _      _      _      _      _      _
   @ls-tilde      _      _      _      _      _      @n-tld      _      _      _      _      @rs-tilde
   _      _      _                    (unicode ~)          _      _      _
+  _
+  _
 )

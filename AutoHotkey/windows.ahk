@@ -25,7 +25,6 @@
 #SingleInstance Force
 
 DOUBLE_CLICK_MS := 350      ; two clicks closer than this are a double click
-DRAG_THRESHOLD := 2         ; px before a press counts as a drag
 KOMOREBIC := "komorebic-no-console.exe"
 lastClick := 0
 
@@ -44,9 +43,9 @@ winHeld := false
 ; one event, in order, and the click never reaches the program. kanata releases
 ; that key after ~20 ms whatever the button does, so F20 is only the trigger;
 ; the drag follows the physical button (GetKeyState "P" sees it even though
-; kanata swallows the click). Win + right click is still the F24 combo.
+; kanata swallows the click). Win + right click is F21 the same way.
 F20:: DragOrToggle()
-F24 & RButton:: ResizeWindow()
+F21:: ResizeWindow()
 
 ; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
 ; komorebi): go to the "Scratchpad" workspace, or back to the previous one
@@ -64,38 +63,65 @@ DragOrToggle() {
     if !CanMove(hwnd)
         return
 
-    ; komorebi's state is read while the press is still waiting for the first
-    ; pixel of movement, so the drag does not wait for it afterwards.
+    ; Focus and raise the window at once: the drag moves it with NOACTIVATE, so
+    ; without this a window that was behind stays behind. komorebi follows the
+    ; focus change by itself.
+    try WinActivate "ahk_id " hwnd
+    ; komorebi's state is read in the background from now on; nothing below
+    ; waits for it. The first pixel of movement starts the drag.
     statePid := PrefetchState()
+    DllCall("winmm\timeBeginPeriod", "UInt", 1)    ; 1 ms Sleep, not 15
     started := false
+    floatPending := true
+    resizeAt := 0
+    lastX := lastY := ""
     began := A_TickCount
     while winHeld && GetKeyState("LButton", "P") {
         MouseGetPos &mx, &my
         if !started {
-            if (Abs(mx - mx0) < DRAG_THRESHOLD && Abs(my - my0) < DRAG_THRESHOLD) {
-                Sleep 10
+            if (mx = mx0 && my = my0) {
+                Sleep 1
                 continue
             }
             started := true
-            FloatIfTiled(hwnd, statePid)
             RestoreIfMaximized(hwnd, mx0, my0)
-            WinGetPos &wx, &wy, , , "ahk_id " hwnd
+            WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
+            fx := ww ? (mx0 - wx) / ww : 0.5    ; where the window was grabbed
+            fy := wh ? (my0 - wy) / wh : 0.5
             dx := wx - mx0
             dy := wy - my0
         }
-        if !MoveAsync(hwnd, mx + dx, my + dy)
-            break                       ; the window closed mid-drag
+        ; As soon as the state is there, float a tiled window without stopping.
+        if floatPending && !ProcessExist(statePid) {
+            floatPending := false
+            if !IsFloating(hwnd, statePid) {
+                Run KOMOREBIC " toggle-float", , "Hide"
+                resizeAt := A_TickCount + 150
+            }
+        }
+        ; komorebi gave the window its floating size: keep the grab point.
+        if (resizeAt && A_TickCount >= resizeAt) {
+            resizeAt := 0
+            WinGetPos , , &nw, &nh, "ahk_id " hwnd
+            dx := -Round(fx * nw)
+            dy := -Round(fy * nh)
+        }
+        if (mx != lastX || my != lastY || resizeAt = 0) {
+            if !MoveAsync(hwnd, mx + dx, my + dy)
+                break                   ; the window closed mid-drag
+            lastX := mx, lastY := my
+        }
         if (A_TickCount - began > 30000)
             break                       ; safety brake
-        Sleep 10
+        Sleep 1
     }
+    DllCall("winmm\timeEndPeriod", "UInt", 1)
 
     if started
         return
     ; Pressed and released without moving: a click. Two close ones toggle.
     if (A_TickCount - lastClick < DOUBLE_CLICK_MS) {
         lastClick := 0
-        try WinActivate "ahk_id " hwnd
         Run KOMOREBIC " toggle-float", , "Hide"
     } else {
         lastClick := A_TickCount
@@ -114,6 +140,7 @@ ResizeWindow() {
     if (WinGetMinMax("ahk_id " hwnd) = 1)
         return                          ; maximized: nothing to resize
 
+    try WinActivate "ahk_id " hwnd      ; focus and raise it, as the move does
     FloatIfTiled(hwnd, PrefetchState())
     WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
     left := (mx < wx + ww // 2)         ; the quadrant the drag began in
