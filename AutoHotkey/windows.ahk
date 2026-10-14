@@ -113,7 +113,7 @@ DragOrToggle() {
             tiled := !IsFloating(hwnd, statePid)    ; waits only if still being read
             statePid := 0
             if tiled {
-                SwapWhileDragging(hwnd)
+                SwapWhileDragging(hwnd, TiledHwnds())
                 break
             }
             RestoreIfMaximized(hwnd, mx0, my0)
@@ -145,39 +145,42 @@ DragOrToggle() {
 }
 
 
-; The drag of a tiled window: whenever the cursor leaves the window's tile,
-; `komorebic move <direction>` swaps it with the neighbour that way (the one
-; under the cursor), and the loop waits for the layout to settle. The cursor must
-; not be warped to the window by komorebi meanwhile, so mouse_follows_focus is
-; off for the length of the drag.
-SwapWhileDragging(hwnd) {
+; The drag of a tiled window. It is never moved by hand. When the cursor enters
+; ANOTHER tiled window, one `komorebic move <direction>` (towards that window)
+; puts the dragged one there, exactly like Win+Shift+H/J/K/L. After a move the
+; loop is disarmed until the cursor is back inside the dragged window: moves
+; that land somewhere else (another monitor...) cannot chain into a dance. The
+; cursor must not be warped to the window by komorebi meanwhile, so
+; mouse_follows_focus is off for the length of the drag.
+SwapWhileDragging(hwnd, tiled) {
     global winHeld, lHeld
     Run KOMOREBIC " mouse-follows-focus disable", , "Hide"
     try {
-        WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
+        armed := true
         began := A_TickCount
-        coolUntil := 0
         while winHeld && lHeld {
-            if (A_TickCount >= coolUntil) {
-                MouseGetPos &mx, &my
-                ox := (mx < rx) ? rx - mx : (mx >= rx + rw ? mx - (rx + rw) + 1 : 0)
-                oy := (my < ry) ? ry - my : (my >= ry + rh ? my - (ry + rh) + 1 : 0)
-                if (ox || oy) {
-                    if (ox >= oy)
-                        dir := (mx < rx) ? "left" : "right"
-                    else
-                        dir := (my < ry) ? "up" : "down"
-                    Run KOMOREBIC " move " dir, , "Hide"
-                    t := A_TickCount
-                    while (A_TickCount - t < 250) {         ; until the layout changes
-                        Sleep 10
-                        WinGetPos &x, &y, &w, &h, "ahk_id " hwnd
-                        if (x != rx || y != ry || w != rw || h != rh)
-                            break
-                    }
-                    WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
-                    coolUntil := A_TickCount + 80
+            MouseGetPos &mx, &my, &under
+            WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
+            if (mx >= rx && mx < rx + rw && my >= ry && my < ry + rh)
+                armed := true
+            else if (armed && under != hwnd && tiled.Has(under + 0)) {
+                WinGetPos &tx, &ty, &tw, &th, "ahk_id " under
+                vx := (tx + tw // 2) - (rx + rw // 2)
+                vy := (ty + th // 2) - (ry + rh // 2)
+                if (Abs(vx) >= Abs(vy))
+                    dir := (vx < 0) ? "left" : "right"
+                else
+                    dir := (vy < 0) ? "up" : "down"
+                armed := false
+                Run KOMOREBIC " move " dir, , "Hide"
+                t := A_TickCount
+                while (A_TickCount - t < 250) {             ; until the layout changes
+                    Sleep 10
+                    WinGetPos &x, &y, &w, &h, "ahk_id " hwnd
+                    if (x != rx || y != ry || w != rw || h != rh)
+                        break
                 }
+                Sleep 60
             }
             if (A_TickCount - began > 30000)
                 break                   ; safety brake
@@ -261,6 +264,30 @@ PrefetchState() {
     try FileDelete tmp
     Run A_ComSpec ' /c ' KOMOREBIC ' state > "' tmp '"', , "Hide", &pid
     return pid
+}
+
+; The windows komorebi tiles, from the state file IsFloating has just read:
+; every hwnd in it minus the ones in floating_windows. Map of hwnd -> true.
+TiledHwnds() {
+    state := ""
+    try state := FileRead(A_Temp "\komorebi-state.json")
+    tiled := Map()
+    pos := 1
+    while RegExMatch(state, '"hwnd":\s*(\d+)', &m, pos) {
+        tiled[Integer(m[1])] := true
+        pos := m.Pos + m.Len
+    }
+    pos := 1
+    while RegExMatch(state, 's)"floating_windows":\s*\{\s*"elements":\s*\[(.*?)\]\s*,\s*"focused"', &m, pos) {
+        inner := m[1]
+        ipos := 1
+        while RegExMatch(inner, '"hwnd":\s*(\d+)', &w, ipos) {
+            tiled.Delete(Integer(w[1]))
+            ipos := w.Pos + w.Len
+        }
+        pos := m.Pos + m.Len
+    }
+    return tiled
 }
 
 ; True when komorebi does not tile the window: it is in a workspace's
