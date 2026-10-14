@@ -1,0 +1,131 @@
+# GlazeWM, replacing komorebi (2026-10-14). Same workspaces, the same
+# floating apps and workspace rules as komorebi.json had, ethereal palette.
+# No keybindings on purpose: kanata (kanata.plain.kbd) and windows.ahk drive it
+# through the CLI (`glazewm command ...`).
+general:
+  startup_commands: []
+  shutdown_commands: []
+  config_reload_commands: []
+  # The pointer is not moved by the WM (it teleported during drags).
+  focus_follows_cursor: false
+  toggle_workspace_on_refocus: false
+  cursor_jump:
+    enabled: false
+    trigger: 'monitor_focus'
+  # 'cloak' keeps hidden windows alive for apps that dislike being hidden.
+  hide_method: 'cloak'
+  show_all_in_taskbar: false
+
+gaps:
+  scale_with_dpi: true
+  inner_gap: '0px'
+  outer_gap:
+    top: '0px'
+    right: '0px'
+    bottom: '0px'
+    left: '0px'
+
+# Palette: #7d82d9 blue, #6d7db6 comment, #060B1E background.
+window_effects:
+  focused_window:
+    border:
+      enabled: true
+      color: '#7d82d9'
+    hide_title_bar:
+      enabled: false
+    corner_style:
+      enabled: false
+      style: 'square'
+    transparency:
+      enabled: false
+      opacity: '100%'
+  other_windows:
+    border:
+      enabled: false
+      color: '#6d7db6'
+    hide_title_bar:
+      enabled: false
+    corner_style:
+      enabled: false
+      style: 'square'
+    # Unfocused windows were 4% transparent in komorebi (245/255), browsers
+    # excluded. Off for now; to bring it back set enabled and opacity '96%'.
+    transparency:
+      enabled: false
+      opacity: '96%'
+
+window_behavior:
+  initial_state: 'tiling'
+  state_defaults:
+    floating:
+      centered: true
+      shown_on_top: false
+    fullscreen:
+      maximized: false
+      shown_on_top: true
+
+# bind_to_monitor: 0 is the leftmost screen (left, centre, right).
+workspaces:
+  - name: 'left'
+    bind_to_monitor: 0
+  - name: 'main'
+    bind_to_monitor: 1
+  - name: 'Nvim'
+    bind_to_monitor: 1
+  - name: 'AfterFX'
+    bind_to_monitor: 1
+  - name: 'Premiere'
+    bind_to_monitor: 1
+  - name: 'Resolve'
+    bind_to_monitor: 1
+  - name: 'Browser'
+    bind_to_monitor: 1
+  - name: 'Claude'
+    bind_to_monitor: 1
+  - name: 'WhatsApp'
+    bind_to_monitor: 1
+  - name: 'Scratchpad'
+    bind_to_monitor: 1
+  - name: 'right'
+    bind_to_monitor: 2
+
+window_rules:
+  # floating_applications of the old komorebi.json
+  - commands: ['set-floating']
+    match:
+      - window_process: { equals: 'Flow.Launcher' }
+      - window_class: { equals: 'CabinetWClass' }
+      - window_process: { equals: 'Adobe Premiere Pro' }
+      - window_process: { equals: 'AfterFX' }
+      - window_class: { equals: 'AE_CApplication' }
+      - window_process: { equals: 'Epidemic Sound' }
+      - window_process: { equals: 'Numi' }
+      - window_class: { equals: 'floatterm' }
+
+  # workspace rules (komorebi's initial_workspace_rules / workspace_rules)
+  - commands: ['move --workspace Nvim']
+    match:
+      - window_process: { equals: 'nvim-wezterm' }
+  - commands: ['move --workspace AfterFX']
+    match:
+      - window_process: { equals: 'AfterFX' }
+  - commands: ['move --workspace Premiere']
+    match:
+      - window_process: { equals: 'Adobe Premiere Pro' }
+  - commands: ['move --workspace Resolve']
+    match:
+      - window_process: { equals: 'Resolve' }
+  - commands: ['move --workspace Browser']
+    match:
+      - window_process: { equals: 'zen' }
+  - commands: ['move --workspace Claude']
+    match:
+      - window_process: { equals: 'claude' }
+        window_class: { equals: 'Chrome_WidgetWin_1' }
+  - commands: ['move --workspace WhatsApp']
+    match:
+      - window_process: { equals: 'WhatsApp.Root' }
+
+binding_modes: []
+
+keybindings: []

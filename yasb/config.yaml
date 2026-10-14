@@ -7,11 +7,6 @@ watch_config: true
 debug: false
 update_check: true
 
-komorebi:
-  start_command: "komorebic start --whkd"
-  stop_command: "komorebic stop --whkd"
-  reload_command: "komorebic reload-configuration"
-
 bars:
   status-bar:
     enabled: true
@@ -37,7 +32,7 @@ bars:
       bottom: 2
       right: 10
     widgets:
-      left: ["komorebi_workspaces", "media"]
+      left: ["glazewm_workspaces", "media"]
       center: ["clock"]
       right: ["todoist", "systray", "memory", "cpu", "notifications"]
 
@@ -95,19 +90,22 @@ widgets:
       # the calendar chime was too quiet, an alarm instead.
       sound: 'C:\Windows\Media\Alarm05.wav'
 
-  komorebi_workspaces:
-    type: "komorebi.workspaces.WorkspaceWidget"
+  glazewm_workspaces:
+    type: "glazewm.workspaces.GlazewmWorkspacesWidget"
     options:
-      label_offline: ""
+      offline_label: ""
       # Small round dots (2026-10-14): the colour tells the state (see
-      # styles.css), the dot's size too. Empty workspaces are hidden.
-      label_workspace_btn: "●"
-      label_workspace_active_btn: "●"
-      label_workspace_populated_btn: "●"
-      label_default_name: "{index}"
-      label_zero_index: false
-      hide_empty_workspaces: true
+      # styles.css), the dot's size too. GlazeWM lists only the workspaces
+      # that have windows (or are focused), so empty ones never show.
+      populated_label: "●"
+      empty_label: "●"
+      active_populated_label: "●"
+      active_empty_label: "●"
+      focused_populated_label: "●"
+      focused_empty_label: "●"
       hide_if_offline: true
+      monitor_exclusive: true
+      enable_scroll_switching: false
 
   media:
     type: "yasb.media.MediaWidget"

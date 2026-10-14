@@ -36,7 +36,7 @@
 
 /* Workspaces: small round dots. Muted when idle, light when used, a bigger
    blue one when current. */
-.komorebi-workspaces .ws-btn {
+.glazewm-workspaces .ws-btn {
     background-color: transparent;
     border: none;
     color: #6d7db6;
@@ -44,9 +44,12 @@
     padding: 0 4px;
     margin: 0 1px;
 }
-.komorebi-workspaces .ws-btn.populated { color: #ffcead; }
-.komorebi-workspaces .ws-btn.active { color: #7d82d9; font-size: 10px; }
-.komorebi-workspaces .ws-btn:hover { color: #92a593; }
+.glazewm-workspaces .ws-btn.populated { color: #ffcead; }
+.glazewm-workspaces .ws-btn.active_populated,
+.glazewm-workspaces .ws-btn.active_empty,
+.glazewm-workspaces .ws-btn.focused_populated,
+.glazewm-workspaces .ws-btn.focused_empty { color: #7d82d9; font-size: 10px; }
+.glazewm-workspaces .ws-btn:hover { color: #92a593; }
 
 .media-widget .label { color: #6d7db6; font-weight: 600; }
 
