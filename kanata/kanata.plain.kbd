@@ -72,16 +72,10 @@
   ;; cursor never sees the click.
   vk-lclick f20
   vk-rclick f21
-  ;; Quick look (CapsLock+B, see @glance): set while a glance is on, so letting
-  ;; go of CapsLock knows to go back. vk-glance-end is tapped when it is released.
-  vk-glance f18
-  vk-glance-end (switch
-                  ((input virtual vk-glance))
-                    (multi (on-press release-vkey vk-glance)
-                           (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); if ($f | path exists) { let p = (open $f | str trim); rm $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace $p }"))
-                    break
-                  () (on-press release-vkey vk-glance) break)
   vk-mclick f19
+  ;; Quick look (CapsLock+B, see @glance): tapped when B is let go, it goes back to
+  ;; the workspace you were on (kept in a temp file by @glance).
+  vk-glance-end (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); if ($f | path exists) { let p = (open $f | str trim); rm $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace $p }")
 )
 
 ;; ----------------------------------------------------------------------------
@@ -106,8 +100,8 @@
   ;; Shift+CapsLock: a tap is still Delete, but held it is caps_nav too, so
   ;; Shift+Caps+C gives Ç (it was a plain Delete, held or not; 2026-10-08).
   cap (fork
-        (tap-hold-press 200 200 esc (multi (layer-while-held caps_nav) (on-release tap-vkey vk-glance-end)))
-        (tap-hold-press 200 200 del (multi (layer-while-held caps_nav) (on-release tap-vkey vk-glance-end)))
+        (tap-hold-press 200 200 esc (layer-while-held caps_nav))
+        (tap-hold-press 200 200 del (layer-while-held caps_nav))
         (lsft rsft))
 
   ;; Left Win / Cmd: Tap = Alt+Space (launcher), Hold = cmd_layer.
@@ -122,8 +116,8 @@
   ;; CapsLock inside Premiere: tap sends Delete instead of Esc. Hold and
   ;; Shift+tap are unchanged.
   cap-del (fork
-            (tap-hold-press 200 200 del (multi (layer-while-held caps_nav) (on-release tap-vkey vk-glance-end)))
-            (tap-hold-press 200 200 del (multi (layer-while-held caps_nav) (on-release tap-vkey vk-glance-end)))
+            (tap-hold-press 200 200 del (layer-while-held caps_nav))
+            (tap-hold-press 200 200 del (layer-while-held caps_nav))
             (lsft rsft))
 
   ;; Left Win inside Zen: same tap (launcher), but the hold reaches a cmd
@@ -139,12 +133,14 @@
   a-retile (cmd C:\PROGRA~1\glzr.io\GlazeWM\cli\glazewm.exe command wm-redraw)
   a-pause (cmd C:\PROGRA~1\glzr.io\GlazeWM\cli\glazewm.exe command wm-toggle-pause)
   ;; Left Alt: normal Alt + activates alt_accent layer for dead keys
-  ;; Quick look: CapsLock+B shows the Browser workspace for as long as CapsLock
-  ;; is held; letting go of CapsLock goes back to the workspace you were on (test
-  ;; key and workspace, 2026-10-14; it was Alt+B, but Alt reaches the apps). The
-  ;; one you left is kept in a temp file.
-  glance (multi (on-press press-vkey vk-glance)
-                (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Browser' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Browser }"))
+  ;; Quick look: hold CapsLock, press and HOLD B: the Browser workspace shows
+  ;; while B is down; letting go of B goes back to the workspace you were on
+  ;; (test key and workspace, 2026-10-14). It was Alt+B, then a hook on CapsLock's
+  ;; release, but a virtual key tapped on CapsLock's release used up the pending
+  ;; dead key (accents stopped waiting for the vowel). The one you left is kept in
+  ;; a temp file.
+  glance (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Browser' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Browser }")
+                (on-release tap-vkey vk-glance-end))
 
   alt (multi lalt (layer-while-held alt_accent))
 
