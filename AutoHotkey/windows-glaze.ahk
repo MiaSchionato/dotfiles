@@ -19,6 +19,8 @@
 #SingleInstance Force
 
 DOUBLE_CLICK_MS := 350      ; two clicks closer than this are a double click
+DRAG_THRESHOLD := 3         ; px before a press counts as a drag: a hand always
+                            ; moves the mouse a pixel or two inside a click
 GLAZE := '"C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe"'
 lastClick := 0
 winHeld := false
@@ -26,6 +28,10 @@ lHeld := false
 rHeld := false
 queryPid := 0
 queryAt := 0
+
+; Warm-up: the first call of the CLI is slow (cold start of the executable);
+; do it now, not on the first Win + click.
+Run GLAZE ' query app-metadata', , "Hide"
 
 ~F24:: {
     global winHeld, queryPid, queryAt
@@ -69,7 +75,7 @@ DragOrToggle() {
     while winHeld && lHeld {
         MouseGetPos &mx, &my
         if !started {
-            if (mx = mx0 && my = my0) {
+            if (Abs(mx - mx0) < DRAG_THRESHOLD && Abs(my - my0) < DRAG_THRESHOLD) {
                 Sleep 1
                 continue
             }
@@ -88,7 +94,9 @@ DragOrToggle() {
         }
         if (A_TickCount - began > 30000)
             break                           ; safety brake
-        Sleep 1
+        ; One move per composed frame (DWM ticks at the fastest monitor, 240 Hz
+        ; here): block until the next frame instead of flooding SetWindowPos.
+        DllCall("dwmapi\DwmFlush")
     }
     DllCall("winmm\timeEndPeriod", "UInt", 1)
 
@@ -178,7 +186,9 @@ FloatIfTiled(hwnd, queryPid := 0) {
 PrefetchWindows() {
     tmp := A_Temp "\glazewm-windows.json"
     try FileDelete tmp
-    Run A_ComSpec ' /c ' GLAZE ' query windows > "' tmp '"', , "Hide", &pid
+    ; cmd /c strips the outer quotes of the line, so the quoted exe path and the
+    ; quoted redirect target both need one more pair around everything.
+    Run A_ComSpec ' /c "' GLAZE ' query windows > "' tmp '""', , "Hide", &pid
     return pid
 }
 
