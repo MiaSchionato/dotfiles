@@ -30,15 +30,23 @@ lastClick := 0
 
 ; kanata swallows the Win key (tap = launcher, hold = command layer), so AHK
 ; never sees it. While Win is held kanata holds F24 (virtual key vk-win in
-; the kanata configs), and F24 stands for Win here. The combos F24 & LButton /
-; F24 & RButton are matched inside AHK's own hook, so the click never reaches
-; the program under the cursor (a #HotIf variable set by another thread raced
-; with the click and let it through). GetKeyState("F24") always answers 0 for
-; a key kanata injects, so the drag loops follow winHeld instead, set by the
-; combos and cleared when F24 goes up.
+; the kanata config), and F24 stands for Win here. GetKeyState("F24") always
+; answers 0 for a key kanata injects, so winHeld tracks it instead. When Win
+; goes down komorebi's state is read in the background (statePid): by the time
+; a drag starts we already know which windows are floating.
 winHeld := false
 lHeld := false
 rHeld := false
+statePid := 0
+stateAt := 0
+~F24:: {
+    global winHeld, statePid, stateAt
+    if winHeld
+        return                          ; auto-repeat
+    winHeld := true
+    statePid := PrefetchState()
+    stateAt := A_TickCount
+}
 ~F24 up:: global winHeld := false
 
 ; Win + left click arrives from kanata as F20 (vk-lclick in the kanata config):
@@ -71,8 +79,11 @@ rHeld := false
 F22:: ToggleScratchpad()
 
 
+; Win + left drag. A floating window follows the cursor. A tiled one is NOT
+; moved (komorebi fights back and it flickers): it stays in the tiling and swaps
+; places with the tile under the cursor, as in Hyprland.
 DragOrToggle() {
-    global lastClick, winHeld
+    global lastClick, winHeld, statePid, stateAt
     winHeld := true              ; F20 comes with Win held
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
@@ -80,17 +91,15 @@ DragOrToggle() {
     if !CanMove(hwnd)
         return
 
-    ; Focus and raise the window at once: the drag moves it with NOACTIVATE, so
-    ; without this a window that was behind stays behind. komorebi follows the
-    ; focus change by itself.
+    if (!statePid || A_TickCount - stateAt > 10000) {   ; Win went down long ago
+        statePid := PrefetchState()
+        stateAt := A_TickCount
+    }
+    ; Focus and raise the window at once: a floating one is moved with NOACTIVATE,
+    ; so without this a window that was behind stays behind.
     try WinActivate "ahk_id " hwnd
-    ; komorebi's state is read in the background from now on; nothing below
-    ; waits for it. The first pixel of movement starts the drag.
-    statePid := PrefetchState()
     DllCall("winmm\timeBeginPeriod", "UInt", 1)    ; 1 ms Sleep, not 15
     started := false
-    floatPending := true
-    resizeAt := 0
     lastX := lastY := ""
     began := A_TickCount
     while winHeld && lHeld {
@@ -101,29 +110,18 @@ DragOrToggle() {
                 continue
             }
             started := true
+            tiled := !IsFloating(hwnd, statePid)    ; waits only if still being read
+            statePid := 0
+            if tiled {
+                SwapWhileDragging(hwnd)
+                break
+            }
             RestoreIfMaximized(hwnd, mx0, my0)
-            WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
-            fx := ww ? (mx0 - wx) / ww : 0.5    ; where the window was grabbed
-            fy := wh ? (my0 - wy) / wh : 0.5
+            WinGetPos &wx, &wy, , , "ahk_id " hwnd
             dx := wx - mx0
             dy := wy - my0
         }
-        ; As soon as the state is there, float a tiled window without stopping.
-        if floatPending && !ProcessExist(statePid) {
-            floatPending := false
-            if !IsFloating(hwnd, statePid) {
-                Run KOMOREBIC " toggle-float", , "Hide"
-                resizeAt := A_TickCount + 150
-            }
-        }
-        ; komorebi gave the window its floating size: keep the grab point.
-        if (resizeAt && A_TickCount >= resizeAt) {
-            resizeAt := 0
-            WinGetPos , , &nw, &nh, "ahk_id " hwnd
-            dx := -Round(fx * nw)
-            dy := -Round(fy * nh)
-        }
-        if (mx != lastX || my != lastY || resizeAt = 0) {
+        if (mx != lastX || my != lastY) {
             if !MoveAsync(hwnd, mx + dx, my + dy)
                 break                   ; the window closed mid-drag
             lastX := mx, lastY := my
@@ -139,10 +137,54 @@ DragOrToggle() {
     ; Pressed and released without moving: a click. Two close ones toggle.
     if (A_TickCount - lastClick < DOUBLE_CLICK_MS) {
         lastClick := 0
+        statePid := 0
         Run KOMOREBIC " toggle-float", , "Hide"
     } else {
         lastClick := A_TickCount
     }
+}
+
+
+; The drag of a tiled window: whenever the cursor leaves the window's tile,
+; `komorebic move <direction>` swaps it with the neighbour that way (the one
+; under the cursor), and the loop waits for the layout to settle. The cursor must
+; not be warped to the window by komorebi meanwhile, so mouse_follows_focus is
+; off for the length of the drag.
+SwapWhileDragging(hwnd) {
+    global winHeld, lHeld
+    Run KOMOREBIC " mouse-follows-focus disable", , "Hide"
+    try {
+        WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
+        began := A_TickCount
+        coolUntil := 0
+        while winHeld && lHeld {
+            if (A_TickCount >= coolUntil) {
+                MouseGetPos &mx, &my
+                ox := (mx < rx) ? rx - mx : (mx >= rx + rw ? mx - (rx + rw) + 1 : 0)
+                oy := (my < ry) ? ry - my : (my >= ry + rh ? my - (ry + rh) + 1 : 0)
+                if (ox || oy) {
+                    if (ox >= oy)
+                        dir := (mx < rx) ? "left" : "right"
+                    else
+                        dir := (my < ry) ? "up" : "down"
+                    Run KOMOREBIC " move " dir, , "Hide"
+                    t := A_TickCount
+                    while (A_TickCount - t < 250) {         ; until the layout changes
+                        Sleep 10
+                        WinGetPos &x, &y, &w, &h, "ahk_id " hwnd
+                        if (x != rx || y != ry || w != rw || h != rh)
+                            break
+                    }
+                    WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
+                    coolUntil := A_TickCount + 80
+                }
+            }
+            if (A_TickCount - began > 30000)
+                break                   ; safety brake
+            Sleep 5
+        }
+    }
+    Run KOMOREBIC " mouse-follows-focus enable", , "Hide"
 }
 
 
