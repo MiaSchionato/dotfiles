@@ -23,6 +23,33 @@
   },
   "transparency": true,
   "transparency_alpha": 245,
+  "transparency_ignore_rules": [
+    {
+      "kind": "Exe",
+      "id": "zen.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "chrome.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "msedge.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "firefox.exe",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Exe",
+      "id": "brave.exe",
+      "matching_strategy": "Equals"
+    }
+  ],
   "mouse_follows_focus": true,
   "display_index_preferences": {
     "0": "PHLC34C-5&12b3b874&0&UID4353",
