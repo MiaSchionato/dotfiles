@@ -48,10 +48,10 @@ window_effects:
     corner_style:
       enabled: false
       style: 'square'
-    # Unfocused windows were 4% transparent in komorebi (245/255), browsers
-    # excluded. Off for now; to bring it back set enabled and opacity '96%'.
+    # Unfocused windows 4% transparent, as in komorebi (245/255 = 96%), on
+    # purpose (Mia, 2026-10-14).
     transparency:
-      enabled: false
+      enabled: true
       opacity: '96%'
 
 window_behavior:
@@ -90,6 +90,11 @@ workspaces:
     bind_to_monitor: 2
 
 window_rules:
+  # Zebar (GlazeWM's own bar, installed with it) is not used: yasb is the bar.
+  - commands: ['ignore']
+    match:
+      - window_process: { equals: 'zebar' }
+
   # floating_applications of the old komorebi.json
   - commands: ['set-floating']
     match:
