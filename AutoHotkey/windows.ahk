@@ -23,6 +23,7 @@ DRAG_THRESHOLD := 3         ; px before a press counts as a drag: a hand always
                             ; moves the mouse a pixel or two inside a click
 GLAZE := '"C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe"'
 lastClick := 0
+lastRClick := 0
 winHeld := false
 lHeld := false
 rHeld := false
@@ -53,6 +54,10 @@ Run GLAZE ' query app-metadata', , "Hide"
     ResizeWindow()
 }
 ~F21 up:: global rHeld := false
+
+; Win + middle click closes the window under the cursor, politely (the same as
+; its close button; an app may ask to save first).
+~F19:: CloseWindowUnderCursor()
 
 
 DragOrToggle() {
@@ -116,13 +121,34 @@ DragOrToggle() {
 
 
 ResizeWindow() {
-    global winHeld
+    global winHeld, lastRClick
     winHeld := true
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
     MouseGetPos &mx, &my, &hwnd
     if !CanMove(hwnd)
         return
+
+    ; A press that does not move is a click: two close ones minimize the window.
+    ; Floating the window waits for the first real movement.
+    moved := false
+    while rHeld && winHeld {
+        MouseGetPos &nx, &ny
+        if (Abs(nx - mx) >= DRAG_THRESHOLD || Abs(ny - my) >= DRAG_THRESHOLD) {
+            moved := true
+            break
+        }
+        Sleep 1
+    }
+    if !moved {
+        if (A_TickCount - lastRClick < DOUBLE_CLICK_MS) {
+            lastRClick := 0
+            MinimizeWindow(hwnd)
+        } else {
+            lastRClick := A_TickCount
+        }
+        return
+    }
     if (WinGetMinMax("ahk_id " hwnd) = 1)
         return                              ; maximized: nothing to resize
 
@@ -152,6 +178,30 @@ ResizeWindow() {
         }
         Sleep 10
     }
+}
+
+
+; Win + double right click: minimize. GlazeWM's own command when it manages the
+; window (it keeps its books right), the plain Windows one otherwise.
+MinimizeWindow(hwnd) {
+    id := GlazeInfo(hwnd, &state)
+    if id
+        Run GLAZE ' command --id ' id ' set-minimized', , "Hide"
+    else
+        try WinMinimize "ahk_id " hwnd
+}
+
+; Win + middle click: ask the window under the cursor to close.
+CloseWindowUnderCursor() {
+    CoordMode "Mouse", "Screen"
+    MouseGetPos , , &hwnd
+    if !CanMove(hwnd)
+        return
+    id := GlazeInfo(hwnd, &state)
+    if id
+        Run GLAZE ' command --id ' id ' close', , "Hide"
+    else
+        try WinClose "ahk_id " hwnd
 }
 
 

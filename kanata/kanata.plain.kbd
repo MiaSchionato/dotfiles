@@ -56,6 +56,7 @@
   ;; handling the mouse after a restart, not a reload.
   mlft
   mrgt
+  mmid
 )
 
 ;; ----------------------------------------------------------------------------
@@ -66,11 +67,12 @@
 (defvirtualkeys
   vk-alt lalt
   vk-win f24
-  ;; Win + left / right click become these keys (kanata releases them after
+  ;; Win + left / right / middle click become these keys (kanata releases them after
   ;; ~20 ms), so windows.ahk gets ONE event in order and the program under the
   ;; cursor never sees the click.
   vk-lclick f20
   vk-rclick f21
+  vk-mclick f19
 )
 
 ;; ----------------------------------------------------------------------------
@@ -85,6 +87,9 @@
   win-rclick (switch
                ((input virtual vk-alt)) mrgt break
                () (multi (on-press press-vkey vk-rclick) (on-release release-vkey vk-rclick)) break)
+  win-mclick (switch
+               ((input virtual vk-alt)) mmid break
+               () (multi (on-press press-vkey vk-mclick) (on-release release-vkey vk-mclick)) break)
 
   ;; CapsLock: Tap = Esc, Shift+Tap = Delete, Hold = caps_nav layer.
   ;; Esc is sent directly now; the Premiere variant lives in @cap-del and
@@ -273,6 +278,7 @@
   @ctl @win @alt          spc            ralt rmet rctl
   _
   _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -284,6 +290,7 @@
   @cap-del a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   @ctl @win @alt          spc            ralt rmet rctl
+  _
   _
   _
 )
@@ -299,6 +306,7 @@
   @ctl @win-zen @alt          spc            ralt rmet rctl
   _
   _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -312,6 +320,7 @@
   _       _    _              _              _    _    _
   _
   _
+  _
 )
 
 ;; ----------------------------------------------------------------------------
@@ -323,6 +332,7 @@
   _       _    _    _    _    _    _    _    _    _    _    _    _
   _       _    _    @c-ced _  _    @os-tld _ _    _    _    _
   _       _    _              _              _    _    _
+  _
   _
   _
 )
@@ -342,6 +352,7 @@
   _      _    _               A-spc           _    _    _
   @win-lclick
   @win-rclick
+  @win-mclick
 )
 
 ;; ----------------------------------------------------------------------------
@@ -355,6 +366,7 @@
   _      _    _               A-spc           _    _    _
   @win-lclick
   @win-rclick
+  @win-mclick
 )
 
 ;; ----------------------------------------------------------------------------
@@ -366,6 +378,7 @@
   _      _    _    _    _    _    C-M-lft _ _  C-M-rght _  _    _
   _      _    _    _    @clip _   _    _    _    _    _    _
   _      _    _              _              _    _    _
+  _
   _
   _
 )
@@ -383,6 +396,7 @@
   _      _      _                    (unicode ´)          _      _      _
   _
   _
+  _
 )
 
 ;; Grave Accent Layer: Alt+` or Caps+` then letter
@@ -392,6 +406,7 @@
   _      @a-grv _      _      _      _      _      _      _      _      _      _      _
   @ls-grave      _      _      _      _      _      _      _      _      _      _      @rs-grave
   _      _      _                    (unicode `)          _      _      _
+  _
   _
   _
 )
@@ -405,6 +420,7 @@
   _      _      _                    (unicode ^)          _      _      _
   _
   _
+  _
 )
 
 ;; Tilde Accent Layer: Alt+N or Caps+N then letter
@@ -414,6 +430,7 @@
   _      @a-tld _      _      _      _      _      _      _      _      _      _      _
   @ls-tilde      _      _      _      _      _      @n-tld      _      _      _      _      @rs-tilde
   _      _      _                    (unicode ~)          _      _      _
+  _
   _
   _
 )
