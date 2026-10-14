@@ -1,7 +1,7 @@
-# yasb, after the Omarchy bar (2026-10-14), in the ethereal colours: flat, low,
-# no border; small round workspace dots and the media on the left, the clock
-# in the middle, Todoist, tray, memory, CPU and notifications on the right.
-# Styles in styles.css next to this file.
+# yasb in the ethereal colours (2026-10-14): a pill-shaped bar with a thin
+# border; small round workspace dots and the media on the left, the clock in
+# the middle, Todoist, tray, memory, CPU and notifications on the right.
+# Only colours of the theme's palette (see styles.css). Styles in styles.css.
 watch_stylesheet: true
 watch_config: true
 debug: false
@@ -29,13 +29,13 @@ bars:
       hide_on_fullscreen: true
     dimensions:
       width: "100%"
-      height: 26
-    # Flush with the top and the sides, as the Omarchy bar.
+      height: 32
+    # The waybar sat 10px in from each side, flush with the top.
     padding:
-      top: 0
-      left: 0
-      bottom: 0
-      right: 0
+      top: 4
+      left: 10
+      bottom: 2
+      right: 10
     widgets:
       left: ["komorebi_workspaces", "media"]
       center: ["clock"]

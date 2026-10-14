@@ -1,11 +1,13 @@
 /*
- * After the Omarchy bar, in the ethereal colours (2026-10-14):
- *   bar        #060B1E (ethereal bg), flat, no border
- *   text       #ffcead (ethereal fg), bold JetBrains Mono Nerd Font
- *   muted      #6d7db6 (empty / secondary)
- *   accent     #82aaff (the blue of the old vim-mode badge): current workspace
- *   hover      #92a593
- *   popups     #060B1E on a 1px #6d7db6 border
+ * The ethereal palette (2026-10-14). Only these colours, nothing outside it:
+ *   bg #060B1E   fg #ffcead   blue #7d82d9   comment #6d7db6
+ *   cyan #a3bfd1   green #92a593   yellow #E9BB4F   red #ED5B5A
+ * Roles:
+ *   bar        bg, 1px blue border, fully rounded (a pill)
+ *   text       fg, bold JetBrains Mono Nerd Font
+ *   muted      comment (idle workspace dots, media, secondary)
+ *   accent     blue: current workspace, border, popups' border
+ *   hover      green
  * Every theme gets its own colours when the theme command exists.
  */
 
@@ -18,12 +20,12 @@
 
 .yasb-bar {
     background-color: #060B1E;
-    border: none;
-    border-radius: 0;
+    border: 1px solid #7d82d9;
+    border-radius: 13px;
 }
 
-.container-left { padding-left: 10px; }
-.container-right { padding-right: 10px; }
+.container-left { padding-left: 6px; }
+.container-right { padding-right: 6px; }
 
 .widget {
     background-color: transparent;
@@ -43,7 +45,7 @@
     margin: 0 1px;
 }
 .komorebi-workspaces .ws-btn.populated { color: #ffcead; }
-.komorebi-workspaces .ws-btn.active { color: #82aaff; font-size: 10px; }
+.komorebi-workspaces .ws-btn.active { color: #7d82d9; font-size: 10px; }
 .komorebi-workspaces .ws-btn:hover { color: #92a593; }
 
 .media-widget .label { color: #6d7db6; font-weight: 600; }
@@ -64,7 +66,7 @@ QToolTip,
 .media-menu {
     background-color: #060B1E;
     color: #ffcead;
-    border: 1px solid #6d7db6;
+    border: 1px solid #7d82d9;
     border-radius: 7px;
 }
 
@@ -106,5 +108,5 @@ QToolTip,
 }
 
 /* Todoist: the next task with a time; beige once its time has come. */
-.todoist .label { color: #82aaff; padding: 0 6px; }
-.todoist .label.due { color: #ecc48d; }
+.todoist .label { color: #7d82d9; padding: 0 6px; }
+.todoist .label.due { color: #E9BB4F; }
