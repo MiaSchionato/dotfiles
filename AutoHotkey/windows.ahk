@@ -37,15 +37,32 @@ lastClick := 0
 ; a key kanata injects, so the drag loops follow winHeld instead, set by the
 ; combos and cleared when F24 goes up.
 winHeld := false
+lHeld := false
+rHeld := false
 ~F24 up:: global winHeld := false
 
 ; Win + left click arrives from kanata as F20 (vk-lclick in the kanata config):
 ; one event, in order, and the click never reaches the program. kanata releases
-; that key after ~20 ms whatever the button does, so F20 is only the trigger;
-; the drag follows the physical button (GetKeyState "P" sees it even though
-; kanata swallows the click). Win + right click is F21 the same way.
-F20:: DragOrToggle()
-F21:: ResizeWindow()
+; that key on its own if Windows does not see it pressed (a plain `F20::` hotkey
+; swallows it: "Unexpected keycode is pressed in kanata but not in Windows"), so
+; the hotkeys keep the ~ prefix: F20 stays down exactly as long as the button,
+; and `F20 up` ends the drag. GetKeyState("LButton", "P") cannot be used: whether
+; AHK sees the swallowed click depends on the order of the mouse hooks.
+; Win + right click is F21 the same way.
+~F20:: {
+    global lHeld := true
+    DragOrToggle()
+}
+~F20 up:: {
+    global lHeld := false
+}
+~F21:: {
+    global rHeld := true
+    ResizeWindow()
+}
+~F21 up:: {
+    global rHeld := false
+}
 
 ; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
 ; komorebi): go to the "Scratchpad" workspace, or back to the previous one
@@ -76,7 +93,7 @@ DragOrToggle() {
     resizeAt := 0
     lastX := lastY := ""
     began := A_TickCount
-    while winHeld && GetKeyState("LButton", "P") {
+    while winHeld && lHeld {
         MouseGetPos &mx, &my
         if !started {
             if (mx = mx0 && my = my0) {
@@ -146,7 +163,7 @@ ResizeWindow() {
     left := (mx < wx + ww // 2)         ; the quadrant the drag began in
     top := (my < wy + wh // 2)
 
-    while GetKeyState("RButton", "P") {
+    while rHeld {
         MouseGetPos &nx, &ny
         dx := nx - mx                   ; total delta since the start, not
         dy := ny - my                   ; incremental: no error piles up
