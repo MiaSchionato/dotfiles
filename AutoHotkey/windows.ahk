@@ -41,6 +41,11 @@ F24 & RButton:: ResizeWindow()
 ; (works for any window, tiled or not). Alt+F4 is Win+W.
 F23:: KillFocused()
 
+; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
+; komorebi): go to the "Scratchpad" workspace, or back to the previous one
+; when already there. Win+Shift+Y (sending the window) is kanata's own.
+F22:: ToggleScratchpad()
+
 
 DragOrToggle() {
     global lastClick
@@ -220,4 +225,16 @@ KillFocused() {
         if (StrLower(exe) = StrLower(p))
             return
     try ProcessClose WinGetPID("ahk_id " hwnd)
+}
+
+ToggleScratchpad() {
+    tmp := A_Temp "\komorebi-workspace.txt"
+    try FileDelete tmp
+    RunWait A_ComSpec ' /c ' KOMOREBIC ' query focused-workspace-name > "' tmp '"', , "Hide"
+    name := ""
+    try name := Trim(FileRead(tmp), " `t`r`n")
+    if (name = "Scratchpad")
+        Run KOMOREBIC " focus-last-workspace", , "Hide"
+    else
+        Run KOMOREBIC " focus-named-workspace Scratchpad", , "Hide"
 }

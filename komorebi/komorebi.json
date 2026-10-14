@@ -21,6 +21,8 @@
     "fps": 120,
     "style": "EaseOutQuad"
   },
+  "transparency": true,
+  "transparency_alpha": 245,
   "mouse_follows_focus": true,
   "display_index_preferences": {
     "0": "PHLC34C-5&12b3b874&0&UID4353",
@@ -119,6 +121,10 @@
               "matching_strategy": "Equals"
             }
           ]
+        },
+        {
+          "name": "Scratchpad",
+          "layout": "BSP"
         }
       ]
     },
@@ -144,6 +150,11 @@
     }
   ],
   "floating_applications": [
+    {
+      "kind": "Exe",
+      "id": "Flow.Launcher.exe",
+      "matching_strategy": "Equals"
+    },
     {
       "kind": "Class",
       "id": "CabinetWClass",

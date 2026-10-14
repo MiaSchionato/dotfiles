@@ -142,6 +142,11 @@
   c-save (fork C-s M-S-s (lsft rsft))
   expl M-e
   ;; Win+D stays show-desktop; Win+Shift+D reaches whkd instead.
+  ;; Scratchpad workspace (notes: "Linux vs windows", Omarchy parity; Mia, 2026-10-14).
+  ;; Win+Y: go to the Scratchpad workspace, or back to the one before when already
+  ;; there (kanata taps F22, windows.ahk decides: it can read komorebi's focused
+  ;; workspace). Win+Shift+Y: send the focused window there and stay.
+  m-scr (fork (macro f22) (cmd komorebic-no-console.exe send-to-named-workspace Scratchpad) (lsft rsft))
   m-desk (fork M-d (cmd komorebic-no-console.exe move-to-named-workspace AfterFX) (lsft rsft))
   m-r (fork (cmd nu -c "komorebic-no-console.exe focus-named-workspace AfterFX; if (ps | where name == 'AfterFX.exe' | is-empty) { start `C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\AfterFX.exe` }") (cmd komorebic-no-console.exe move-to-named-workspace Resolve) (lsft rsft)) ;; Resolve
   m-p (fork (cmd nu -c "komorebic-no-console.exe focus-named-workspace Premiere; if (ps | where name == 'Adobe Premiere Pro.exe' | is-empty) { start `C:\Program Files\Adobe\Adobe Premiere Pro 2026\Adobe Premiere Pro.exe` }") (cmd komorebic-no-console.exe move-to-named-workspace Premiere) (lsft rsft)) ;; Premiere
@@ -298,7 +303,7 @@
 ;; and kanata.plain.kbd (without them). Mia, 2026-10-08.
 (deflayer cmd_layer
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
- @w-tab @m-q   @w-cls @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
+ @w-tab @m-q   @w-cls @expl @m-r C-t  @m-scr _  @m-i @m-o @m-p   @m-[  @m-]    _
   _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
@@ -309,7 +314,7 @@
 ;; ----------------------------------------------------------------------------
 (deflayer cmd_zen
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
- @w-tab @m-q   C-w    @expl @m-r C-t  _    _    @m-i @m-o @m-p   @m-[  @m-]    _
+ @w-tab @m-q   C-w    @expl @m-r C-t  @m-scr _  @m-i @m-o @m-p   @m-[  @m-]    _
   _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
   _      _    _               A-spc           _    _    _
