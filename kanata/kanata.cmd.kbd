@@ -72,9 +72,9 @@
   ;; Held while Win is held: AutoHotkey cannot see Win (kanata swallows it), so
   ;; windows.ahk reads this F24 for Win+mouse (move / resize windows).
   vk-win f24
-  ;; Win + left click: the click itself becomes this key, held while the button
-  ;; is down, so windows.ahk gets ONE event in order (no race with F24) and the
-  ;; program under the cursor never sees the click.
+  ;; Win + left click: the click itself becomes this key (kanata releases it after
+  ;; ~20 ms, not when the button is let go), so windows.ahk gets ONE event in
+  ;; order (no race with F24) and the program under the cursor never sees the click.
   vk-lclick f20
   ;; The modes: held down by a virtual key, ON TOP of the base layer that
   ;; komokana swaps (base / premiere / zen). A focus change swaps the base
@@ -99,7 +99,11 @@
 ;; ----------------------------------------------------------------------------
 (defalias
   ;; Left mouse button inside the Win layers (see vk-lclick).
-  win-lclick (multi (on-press press-vkey vk-lclick) (on-release release-vkey vk-lclick))
+  ;; With the Win+Tab switcher open (vk-alt held) the click is a normal click, to
+  ;; pick the window there.
+  win-lclick (switch
+               ((input virtual vk-alt)) mlft break
+               () (multi (on-press press-vkey vk-lclick) (on-release release-vkey vk-lclick)) break)
 
   ;; CapsLock: Tap = Esc, Shift+Tap = Delete, Hold = caps_nav layer.
   ;; Esc is sent directly now; the Premiere variant lives in @cap-del and

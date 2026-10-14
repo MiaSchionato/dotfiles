@@ -38,15 +38,14 @@ lastClick := 0
 ; a key kanata injects, so the drag loops follow winHeld instead, set by the
 ; combos and cleared when F24 goes up.
 winHeld := false
-lbtnDown := false
 ~F24 up:: global winHeld := false
 
-; Win + left click arrives from kanata as F20, held while the button is down
-; (vk-lclick in the kanata config): one event, in order, and the click never
-; reaches the program. GetKeyState cannot report injected keys, so the release
-; has its own hotkey. Win + right click is still the F24 combo.
+; Win + left click arrives from kanata as F20 (vk-lclick in the kanata config):
+; one event, in order, and the click never reaches the program. kanata releases
+; that key after ~20 ms whatever the button does, so F20 is only the trigger;
+; the drag follows the physical button (GetKeyState "P" sees it even though
+; kanata swallows the click). Win + right click is still the F24 combo.
 F20:: DragOrToggle()
-F20 up:: global lbtnDown := false
 F24 & RButton:: ResizeWindow()
 
 ; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
@@ -57,9 +56,8 @@ F22:: ToggleScratchpad()
 
 
 DragOrToggle() {
-    global lastClick, winHeld, lbtnDown
-    winHeld := true              ; the combo means F24 is down
-    lbtnDown := true
+    global lastClick, winHeld
+    winHeld := true              ; F20 comes with Win held
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
     MouseGetPos &mx0, &my0, &hwnd
@@ -71,7 +69,7 @@ DragOrToggle() {
     statePid := PrefetchState()
     started := false
     began := A_TickCount
-    while winHeld && lbtnDown {
+    while winHeld && GetKeyState("LButton", "P") {
         MouseGetPos &mx, &my
         if !started {
             if (Abs(mx - mx0) < DRAG_THRESHOLD && Abs(my - my0) < DRAG_THRESHOLD) {
