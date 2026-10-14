@@ -30,15 +30,23 @@ lastClick := 0
 
 ; kanata swallows the Win key (tap = launcher, hold = command layer), so AHK
 ; never sees it. While Win is held kanata holds F24 (virtual key vk-win in
-; the kanata configs), and F24 stands for Win here. The combos F24 & LButton /
-; F24 & RButton are matched inside AHK's own hook, so the click never reaches
-; the program under the cursor (a #HotIf variable set by another thread raced
-; with the click and let it through). GetKeyState("F24") always answers 0 for
-; a key kanata injects, so the drag loops follow winHeld instead, set by the
-; combos and cleared when F24 goes up.
+; the kanata config), and F24 stands for Win here. GetKeyState("F24") always
+; answers 0 for a key kanata injects, so winHeld tracks it instead. When Win
+; goes down komorebi's state is read in the background (statePid): by the time
+; the drag starts we already know which windows are floating.
 winHeld := false
 lHeld := false
 rHeld := false
+statePid := 0
+stateAt := 0
+~F24:: {
+    global winHeld, statePid, stateAt
+    if winHeld
+        return                          ; auto-repeat
+    winHeld := true
+    statePid := PrefetchState()
+    stateAt := A_TickCount
+}
 ~F24 up:: global winHeld := false
 
 ; Win + left click arrives from kanata as F20 (vk-lclick in the kanata config):
@@ -72,7 +80,7 @@ F22:: ToggleScratchpad()
 
 
 DragOrToggle() {
-    global lastClick, winHeld
+    global lastClick, winHeld, statePid
     winHeld := true              ; F20 comes with Win held
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
@@ -84,13 +92,8 @@ DragOrToggle() {
     ; without this a window that was behind stays behind. komorebi follows the
     ; focus change by itself.
     try WinActivate "ahk_id " hwnd
-    ; komorebi's state is read in the background from now on; nothing below
-    ; waits for it. The first pixel of movement starts the drag.
-    statePid := PrefetchState()
     DllCall("winmm\timeBeginPeriod", "UInt", 1)    ; 1 ms Sleep, not 15
     started := false
-    floatPending := true
-    resizeAt := 0
     lastX := lastY := ""
     began := A_TickCount
     while winHeld && lHeld {
@@ -101,29 +104,23 @@ DragOrToggle() {
                 continue
             }
             started := true
-            RestoreIfMaximized(hwnd, mx0, my0)
+            ; The first pixel: let komorebi let go of the window (once, before
+            ; any move, so the two never fight over it), then grab it at the
+            ; same relative point of whatever size it ends up with.
             WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
-            fx := ww ? (mx0 - wx) / ww : 0.5    ; where the window was grabbed
+            fx := ww ? (mx0 - wx) / ww : 0.5
             fy := wh ? (my0 - wy) / wh : 0.5
-            dx := wx - mx0
-            dy := wy - my0
-        }
-        ; As soon as the state is there, float a tiled window without stopping.
-        if floatPending && !ProcessExist(statePid) {
-            floatPending := false
-            if !IsFloating(hwnd, statePid) {
-                Run KOMOREBIC " toggle-float", , "Hide"
-                resizeAt := A_TickCount + 150
+            EnsureFloating(hwnd)
+            if (WinGetMinMax("ahk_id " hwnd) = 1) {     ; Adobe windows: maximized
+                WinRestore "ahk_id " hwnd
+                Sleep 60
             }
-        }
-        ; komorebi gave the window its floating size: keep the grab point.
-        if (resizeAt && A_TickCount >= resizeAt) {
-            resizeAt := 0
+            MouseGetPos &mx, &my                        ; it kept moving meanwhile
             WinGetPos , , &nw, &nh, "ahk_id " hwnd
             dx := -Round(fx * nw)
             dy := -Round(fy * nh)
         }
-        if (mx != lastX || my != lastY || resizeAt = 0) {
+        if (mx != lastX || my != lastY) {
             if !MoveAsync(hwnd, mx + dx, my + dy)
                 break                   ; the window closed mid-drag
             lastX := mx, lastY := my
@@ -139,6 +136,7 @@ DragOrToggle() {
     ; Pressed and released without moving: a click. Two close ones toggle.
     if (A_TickCount - lastClick < DOUBLE_CLICK_MS) {
         lastClick := 0
+        statePid := 0                   ; the cached state is stale now
         Run KOMOREBIC " toggle-float", , "Hide"
     } else {
         lastClick := A_TickCount
@@ -158,7 +156,7 @@ ResizeWindow() {
         return                          ; maximized: nothing to resize
 
     try WinActivate "ahk_id " hwnd      ; focus and raise it, as the move does
-    FloatIfTiled(hwnd, PrefetchState())
+    EnsureFloating(hwnd)
     WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
     left := (mx < wx + ww // 2)         ; the quadrant the drag began in
     top := (my < wy + wh // 2)
@@ -186,30 +184,64 @@ ResizeWindow() {
 }
 
 
-; A maximized window is restored with the cursor on the SAME relative
-; point of it, or it would jump from under the pointer (the Adobe windows
-; are almost always maximized).
-RestoreIfMaximized(hwnd, mx, my) {
-    if (WinGetMinMax("ahk_id " hwnd) != 1)
+; Make sure komorebi does not tile the window, without it noticing a fight:
+; `komorebic toggle-float` acts on the focused window, so the window has to be
+; focused first. Whether it is tiled comes from the state read when Win went
+; down, or, if that is not ready, from asking komorebi about the focused window
+; (a few ms). Then wait for komorebi to lay the window out as a floating one.
+EnsureFloating(hwnd) {
+    global statePid
+    floating := KnownFloating(hwnd)
+    if (floating = -1) {
+        FocusWindow(hwnd)
+        kind := QueryKind()
+        floating := !(kind = "Single" || kind = "Stack" || kind = "Monocle")
+    }
+    if floating
         return
-    WinGetPos &ax, &ay, &aw, &ah, "ahk_id " hwnd
-    fx := aw ? (mx - ax) / aw : 0.5
-    fy := ah ? (my - ay) / ah : 0.5
-    WinRestore "ahk_id " hwnd
-    Sleep 60
-    WinGetPos , , &nw, &nh, "ahk_id " hwnd
-    try WinMove mx - Round(fx * nw), my - Round(fy * nh), , , "ahk_id " hwnd
+    FocusWindow(hwnd)
+    WinGetPos &x0, &y0, &w0, &h0, "ahk_id " hwnd
+    RunWait KOMOREBIC " toggle-float", , "Hide"
+    statePid := 0                       ; the cached state is stale now
+    t := A_TickCount
+    while (A_TickCount - t < 150) {
+        WinGetPos &x, &y, &w, &h, "ahk_id " hwnd
+        if (x != x0 || y != y0 || w != w0 || h != h0) {
+            Sleep 20                    ; let it settle
+            break
+        }
+        Sleep 5
+    }
 }
 
+FocusWindow(hwnd) {
+    if !WinActive("ahk_id " hwnd) {
+        try WinActivate "ahk_id " hwnd
+        WinWaitActive "ahk_id " hwnd, , 0.3
+    }
+    Sleep 15                            ; komorebi hears about the focus change
+}
 
-; Float the window if komorebi tiles it: `komorebic toggle-float` acts on
-; the focused window, so focus it first. Asking komorebi's state once per
-; drag is a process spawn, fine for a discrete step (not per frame).
-FloatIfTiled(hwnd, statePid := 0) {
-    if IsFloating(hwnd, statePid)
-        return
-    try WinActivate "ahk_id " hwnd
-    RunWait KOMOREBIC " toggle-float", , "Hide"
+; komorebi's view of the focused window: Single / Stack / Monocle when tiled,
+; Floating when not.
+QueryKind() {
+    try {
+        exec := ComObject("WScript.Shell").Exec(KOMOREBIC " query focused-container-kind")
+        return Trim(exec.StdOut.ReadAll(), " `t`r`n")
+    }
+    return ""
+}
+
+; 1 / 0 from the state read when Win went down, -1 when there is none.
+KnownFloating(hwnd) {
+    global statePid, stateAt
+    if (!statePid || A_TickCount - stateAt > 10000)
+        return -1
+    if ProcessExist(statePid)
+        ProcessWaitClose statePid, 0.15
+    if ProcessExist(statePid)
+        return -1
+    return IsFloating(hwnd, statePid) ? 1 : 0
 }
 
 ; Starts `komorebic state` in the background, writing to a temp file; returns the
