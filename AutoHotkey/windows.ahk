@@ -147,23 +147,29 @@ DragOrToggle() {
 
 ; The drag of a tiled window. It is never moved by hand. When the cursor enters
 ; ANOTHER tiled window, one `komorebic move <direction>` (towards that window)
-; puts the dragged one there, exactly like Win+Shift+H/J/K/L. After a move the
-; loop is disarmed until the cursor is back inside the dragged window: moves
-; that land somewhere else (another monitor...) cannot chain into a dance. The
-; cursor must not be warped to the window by komorebi meanwhile, so
+; puts the dragged one there, exactly like Win+Shift+H/J/K/L. A target that is
+; not a neighbour (diagonal in a BSP layout) takes several moves, so the loop
+; goes on after a move, but only while the move brought the dragged window
+; closer to the cursor, and at most 4 times in a row: a move that lands
+; somewhere else (another monitor...) stops the chain instead of dancing. The
+; chain counts start over when the cursor is inside the dragged window again.
+; The cursor must not be warped to the window by komorebi meanwhile, so
 ; mouse_follows_focus is off for the length of the drag.
 SwapWhileDragging(hwnd, tiled) {
     global winHeld, lHeld
     Run KOMOREBIC " mouse-follows-focus disable", , "Hide"
     try {
         armed := true
+        steps := 0
         began := A_TickCount
         while winHeld && lHeld {
             MouseGetPos &mx, &my, &under
             WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
-            if (mx >= rx && mx < rx + rw && my >= ry && my < ry + rh)
+            if (mx >= rx && mx < rx + rw && my >= ry && my < ry + rh) {
                 armed := true
-            else if (armed && under != hwnd && tiled.Has(under + 0)) {
+                steps := 0
+            } else if (armed && under != hwnd && tiled.Has(under + 0)) {
+                before := RectDistance(mx, my, rx, ry, rw, rh)
                 WinGetPos &tx, &ty, &tw, &th, "ahk_id " under
                 vx := (tx + tw // 2) - (rx + rw // 2)
                 vy := (ty + th // 2) - (ry + rh // 2)
@@ -171,7 +177,6 @@ SwapWhileDragging(hwnd, tiled) {
                     dir := (vx < 0) ? "left" : "right"
                 else
                     dir := (vy < 0) ? "up" : "down"
-                armed := false
                 Run KOMOREBIC " move " dir, , "Hide"
                 t := A_TickCount
                 while (A_TickCount - t < 250) {             ; until the layout changes
@@ -181,6 +186,10 @@ SwapWhileDragging(hwnd, tiled) {
                         break
                 }
                 Sleep 60
+                WinGetPos &rx, &ry, &rw, &rh, "ahk_id " hwnd
+                MouseGetPos &mx, &my
+                steps += 1
+                armed := (steps < 4 && RectDistance(mx, my, rx, ry, rw, rh) < before)
             }
             if (A_TickCount - began > 30000)
                 break                   ; safety brake
@@ -264,6 +273,13 @@ PrefetchState() {
     try FileDelete tmp
     Run A_ComSpec ' /c ' KOMOREBIC ' state > "' tmp '"', , "Hide", &pid
     return pid
+}
+
+; Distance from a point to a rectangle (0 when inside).
+RectDistance(px, py, rx, ry, rw, rh) {
+    ox := (px < rx) ? rx - px : (px >= rx + rw ? px - (rx + rw) + 1 : 0)
+    oy := (py < ry) ? ry - py : (py >= ry + rh ? py - (ry + rh) + 1 : 0)
+    return Sqrt(ox * ox + oy * oy)
 }
 
 ; The windows komorebi tiles, from the state file IsFloating has just read:
