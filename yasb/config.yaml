@@ -1,7 +1,7 @@
 # yasb in the ethereal colours (2026-10-14): a pill-shaped bar with a thin
 # border; small round workspace dots and the media on the left, the clock in
 # the middle, Todoist, tray, memory, CPU and notifications on the right.
-# Only colours of the theme's palette (see styles.css). Styles in styles.css.
+# Only colours of the theme palette (see styles.css). Styles in styles.css.
 watch_stylesheet: true
 watch_config: true
 debug: false
