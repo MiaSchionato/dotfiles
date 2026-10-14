@@ -41,10 +41,12 @@ winHeld := false
 lbtnDown := false
 ~F24 up:: global winHeld := false
 
-; kanata re-sends the left click as an injected one, which GetKeyState cannot
-; report as pressed (even "P"), so the button release is caught by its own hotkey.
-F24 & LButton:: DragOrToggle()
-F24 & LButton up:: global lbtnDown := false
+; Win + left click arrives from kanata as F20, held while the button is down
+; (vk-lclick in the kanata config): one event, in order, and the click never
+; reaches the program. GetKeyState cannot report injected keys, so the release
+; has its own hotkey. Win + right click is still the F24 combo.
+F20:: DragOrToggle()
+F20 up:: global lbtnDown := false
 F24 & RButton:: ResizeWindow()
 
 ; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
