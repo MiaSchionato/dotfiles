@@ -69,6 +69,9 @@
 ;; Win releases it (see @win and @w-tab).
 (defvirtualkeys
   vk-alt lalt
+  ;; Held while Win is held: AutoHotkey cannot see Win (kanata swallows it), so
+  ;; windows.ahk reads this F24 for Win+mouse (move / resize windows).
+  vk-win f24
   ;; The modes: held down by a virtual key, ON TOP of the base layer that
   ;; komokana swaps (base / premiere / zen). A focus change swaps the base
   ;; underneath and the mode stays.
@@ -105,7 +108,7 @@
   ;; Releasing it also lets go of the Alt that Win+Tab holds (@w-tab), and
   ;; then lands in WINDOW (vk-win-up).
   win (tap-hold-press 200 200 (on-press press-vkey vk-window)
-        (multi (layer-while-held cmd_layer) (on-release tap-vkey vk-win-up)))
+        (multi (layer-while-held cmd_layer) (on-press press-vkey vk-win) (on-release release-vkey vk-win) (on-release tap-vkey vk-win-up)))
 
   ;; --- Per-application variants, selected by komokana ---
   ;; komokana swaps the BASE layer on focus change, so each variant is the
@@ -121,7 +124,7 @@
   ;; Left Win inside Zen: same tap (launcher), but the hold reaches a cmd
   ;; layer whose W closes a tab instead of a window.
   win-zen (tap-hold-press 200 200 (on-press press-vkey vk-window)
-            (multi (layer-while-held cmd_zen) (on-release tap-vkey vk-win-up)))
+            (multi (layer-while-held cmd_zen) (on-press press-vkey vk-win) (on-release release-vkey vk-win) (on-release tap-vkey vk-win-up)))
 
   ;; Win+W outside a browser. whkd already maps this chord to komorebic
   ;; close, so kanata never runs a command itself.
@@ -141,12 +144,17 @@
 
   ;; Command layer aliases
   undo  (fork C-z C-S-z (lsft rsft))
-  ;; Win+Q: komorebic close; with the Win+Tab switcher open (vk-alt held),
+  ;; Win+Q: force quit (below); with the Win+Tab switcher open (vk-alt held),
   ;; Delete instead, which closes the window selected there and keeps the
   ;; switcher open (Mia, 2026-10-08).
+  ;; Force quit: kill the process of the focused window. nu has no Win32 calls, so the
+  ;; foreground PID comes from an inline powershell (-EncodedCommand: GetForegroundWindow +
+  ;; GetWindowThreadProcessId), and nu does the rest: skips the shell and the input stack
+  ;; (explorer, komorebi, kanata, AutoHotkey, yasb) and kills the rest. Takes ~1 s
+  ;; (powershell start-up). Replaces AutoHotkey's F23 KillFocused (2026-10-14).
   m-q (switch
         ((input virtual vk-alt)) del break
-        () (cmd komorebic-no-console.exe close) break)
+        () (cmd nu -c "let p = (powershell -NoProfile -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlACAAVwAgAC0ATgBhAG0AZQBzAHAAYQBjAGUAIABOACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAJwBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAHUAcwBlAHIAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABTAHkAcwB0AGUAbQAuAEkAbgB0AFAAdAByACAARwBlAHQARgBvAHIAZQBnAHIAbwB1AG4AZABXAGkAbgBkAG8AdwAoACkAOwBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAHUAcwBlAHIAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIAB1AGkAbgB0ACAARwBlAHQAVwBpAG4AZABvAHcAVABoAHIAZQBhAGQAUAByAG8AYwBlAHMAcwBJAGQAKABTAHkAcwB0AGUAbQAuAEkAbgB0AFAAdAByACAAaAAsACAAbwB1AHQAIAB1AGkAbgB0ACAAcAApADsAJwA7ACAAJABwACAAPQAgAFsAdQBpAG4AdAAzADIAXQAwADsAIABbAHYAbwBpAGQAXQBbAE4ALgBXAF0AOgA6AEcAZQB0AFcAaQBuAGQAbwB3AFQAaAByAGUAYQBkAFAAcgBvAGMAZQBzAHMASQBkACgAWwBOAC4AVwBdADoAOgBHAGUAdABGAG8AcgBlAGcAcgBvAHUAbgBkAFcAaQBuAGQAbwB3ACgAKQAsACAAWwByAGUAZgBdACQAcAApADsAIAAkAHAA | str trim | into int); let n = (ps | where pid == $p | get name | first | str downcase); if $n not-in ['explorer.exe' 'komorebi.exe' 'kanata_windows_tty_winiov2_cmd_allowed_x64.exe' 'autohotkey64.exe' 'yasb.exe' 'pythonw.exe'] { kill -f $p }") break)
   ;; w-cls A-f4 ;; for now, it should be ctrl + w when on zen browser
   ;; Win+W closes the window with Alt+F4 straight from kanata (Mia, 2026-10-07):
   ;; komorebic close failed on windows komorebi does not manage (floating

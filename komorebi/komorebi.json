@@ -17,9 +17,9 @@
   },
   "animation": {
     "enabled": true,
-    "duration": 200,
+    "duration": 180,
     "fps": 120,
-    "style": "EaseOutQuad"
+    "style": "EaseOutQuint"
   },
   "transparency": true,
   "transparency_alpha": 245,

@@ -120,9 +120,14 @@
   ;; Win+Q: komorebic close; with the Win+Tab switcher open (vk-alt held),
   ;; Delete instead, which closes the window selected there and keeps the
   ;; switcher open (Mia, 2026-10-08).
+  ;; Force quit: kill the process of the focused window. nu has no Win32 calls, so the
+  ;; foreground PID comes from an inline powershell (-EncodedCommand: GetForegroundWindow +
+  ;; GetWindowThreadProcessId), and nu does the rest: skips the shell and the input stack
+  ;; (explorer, komorebi, kanata, AutoHotkey, yasb) and kills the rest. Takes ~1 s
+  ;; (powershell start-up). Replaces AutoHotkey's F23 KillFocused (2026-10-14).
   m-q (switch
         ((input virtual vk-alt)) del break
-        () (macro f23) break)
+        () (cmd nu -c "let p = (powershell -NoProfile -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlACAAVwAgAC0ATgBhAG0AZQBzAHAAYQBjAGUAIABOACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAJwBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAHUAcwBlAHIAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABTAHkAcwB0AGUAbQAuAEkAbgB0AFAAdAByACAARwBlAHQARgBvAHIAZQBnAHIAbwB1AG4AZABXAGkAbgBkAG8AdwAoACkAOwBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAHUAcwBlAHIAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIAB1AGkAbgB0ACAARwBlAHQAVwBpAG4AZABvAHcAVABoAHIAZQBhAGQAUAByAG8AYwBlAHMAcwBJAGQAKABTAHkAcwB0AGUAbQAuAEkAbgB0AFAAdAByACAAaAAsACAAbwB1AHQAIAB1AGkAbgB0ACAAcAApADsAJwA7ACAAJABwACAAPQAgAFsAdQBpAG4AdAAzADIAXQAwADsAIABbAHYAbwBpAGQAXQBbAE4ALgBXAF0AOgA6AEcAZQB0AFcAaQBuAGQAbwB3AFQAaAByAGUAYQBkAFAAcgBvAGMAZQBzAHMASQBkACgAWwBOAC4AVwBdADoAOgBHAGUAdABGAG8AcgBlAGcAcgBvAHUAbgBkAFcAaQBuAGQAbwB3ACgAKQAsACAAWwByAGUAZgBdACQAcAApADsAIAAkAHAA | str trim | into int); let n = (ps | where pid == $p | get name | first | str downcase); if $n not-in ['explorer.exe' 'komorebi.exe' 'kanata_windows_tty_winiov2_cmd_allowed_x64.exe' 'autohotkey64.exe' 'yasb.exe' 'pythonw.exe'] { kill -f $p }") break)
   ;; w-cls A-f4 ;; for now, it should be ctrl + w when on zen browser
   ;; Win+W closes the window with Alt+F4 straight from kanata (Mia, 2026-10-07):
   ;; komorebic close failed on windows komorebi does not manage (floating

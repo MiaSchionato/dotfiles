@@ -31,19 +31,22 @@ lastClick := 0
 
 ; kanata swallows the Win key (tap = launcher, hold = command layer), so AHK
 ; never sees it. While Win is held kanata holds F24 (virtual key vk-win in
-; kanata.plain.kbd), and F24 stands for Win here.
-WIN_KEY := "F24"
+; the kanata configs), and F24 stands for Win here. The state is tracked in
+; winHeld: GetKeyState("F24") always answers 0 for a key kanata injects, in
+; every mode, so it cannot be asked (that is why the drag never ran).
+winHeld := false
+~F24:: global winHeld := true
+~F24 up:: global winHeld := false
 
-F24 & LButton:: DragOrToggle()
-F24 & RButton:: ResizeWindow()
-
-; Win+Q: kanata taps F23. Force quit: kill the process of the focused window
-; (works for any window, tiled or not). Alt+F4 is Win+W.
-F23:: KillFocused()
+#HotIf winHeld
+LButton:: DragOrToggle()
+RButton:: ResizeWindow()
+#HotIf
 
 ; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
 ; komorebi): go to the "Scratchpad" workspace, or back to the previous one
 ; when already there. Win+Shift+Y (sending the window) is kanata's own.
+; Win+Q (force quit) is kanata's own now: nu -c in the kanata configs.
 F22:: ToggleScratchpad()
 
 
@@ -58,7 +61,7 @@ DragOrToggle() {
     started := false
     seenButton := false
     began := A_TickCount
-    while GetKeyState(WIN_KEY) {
+    while winHeld {
         if ButtonDown("LButton")
             seenButton := true
         else if seenButton
@@ -209,23 +212,6 @@ CanMove(hwnd) {
     return true
 }
 
-
-; Never kill the shell, the desktop or the input stack.
-KillFocused() {
-    static protected := ["explorer.exe", "komorebi.exe", "kanata_windows_tty_winIOv2_cmd_allowed_x64.exe",
-                         "AutoHotkey64.exe", "yasb.exe", "csrss.exe", "winlogon.exe"]
-    hwnd := WinExist("A")
-    if !hwnd
-        return
-    exe := ""
-    try exe := WinGetProcessName("ahk_id " hwnd)
-    if (exe = "")
-        return
-    for p in protected
-        if (StrLower(exe) = StrLower(p))
-            return
-    try ProcessClose WinGetPID("ahk_id " hwnd)
-}
 
 ToggleScratchpad() {
     tmp := A_Temp "\komorebi-workspace.txt"
