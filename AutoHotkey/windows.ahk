@@ -25,23 +25,27 @@
 #SingleInstance Force
 
 DOUBLE_CLICK_MS := 350      ; two clicks closer than this are a double click
-DRAG_THRESHOLD := 5         ; px before a press counts as a drag
+DRAG_THRESHOLD := 2         ; px before a press counts as a drag
 KOMOREBIC := "komorebic-no-console.exe"
 lastClick := 0
 
 ; kanata swallows the Win key (tap = launcher, hold = command layer), so AHK
 ; never sees it. While Win is held kanata holds F24 (virtual key vk-win in
-; the kanata configs), and F24 stands for Win here. The state is tracked in
-; winHeld: GetKeyState("F24") always answers 0 for a key kanata injects, in
-; every mode, so it cannot be asked (that is why the drag never ran).
+; the kanata configs), and F24 stands for Win here. The combos F24 & LButton /
+; F24 & RButton are matched inside AHK's own hook, so the click never reaches
+; the program under the cursor (a #HotIf variable set by another thread raced
+; with the click and let it through). GetKeyState("F24") always answers 0 for
+; a key kanata injects, so the drag loops follow winHeld instead, set by the
+; combos and cleared when F24 goes up.
 winHeld := false
-~F24:: global winHeld := true
+lbtnDown := false
 ~F24 up:: global winHeld := false
 
-#HotIf winHeld
-LButton:: DragOrToggle()
-RButton:: ResizeWindow()
-#HotIf
+; kanata re-sends the left click as an injected one, which GetKeyState cannot
+; report as pressed (even "P"), so the button release is caught by its own hotkey.
+F24 & LButton:: DragOrToggle()
+F24 & LButton up:: global lbtnDown := false
+F24 & RButton:: ResizeWindow()
 
 ; Win+Y: kanata taps F22. Scratchpad workspace (Omarchy's scratchpad on
 ; komorebi): go to the "Scratchpad" workspace, or back to the previous one
@@ -51,21 +55,21 @@ F22:: ToggleScratchpad()
 
 
 DragOrToggle() {
-    global lastClick
+    global lastClick, winHeld, lbtnDown
+    winHeld := true              ; the combo means F24 is down
+    lbtnDown := true
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
     MouseGetPos &mx0, &my0, &hwnd
     if !CanMove(hwnd)
         return
 
+    ; komorebi's state is read while the press is still waiting for the first
+    ; pixel of movement, so the drag does not wait for it afterwards.
+    statePid := PrefetchState()
     started := false
-    seenButton := false
     began := A_TickCount
-    while winHeld {
-        if ButtonDown("LButton")
-            seenButton := true
-        else if seenButton
-            break                       ; mouse: the button was let go
+    while winHeld && lbtnDown {
         MouseGetPos &mx, &my
         if !started {
             if (Abs(mx - mx0) < DRAG_THRESHOLD && Abs(my - my0) < DRAG_THRESHOLD) {
@@ -73,7 +77,7 @@ DragOrToggle() {
                 continue
             }
             started := true
-            FloatIfTiled(hwnd)
+            FloatIfTiled(hwnd, statePid)
             RestoreIfMaximized(hwnd, mx0, my0)
             WinGetPos &wx, &wy, , , "ahk_id " hwnd
             dx := wx - mx0
@@ -100,6 +104,8 @@ DragOrToggle() {
 
 
 ResizeWindow() {
+    global winHeld
+    winHeld := true
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
     MouseGetPos &mx, &my, &hwnd
@@ -108,7 +114,7 @@ ResizeWindow() {
     if (WinGetMinMax("ahk_id " hwnd) = 1)
         return                          ; maximized: nothing to resize
 
-    FloatIfTiled(hwnd)
+    FloatIfTiled(hwnd, PrefetchState())
     WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
     left := (mx < wx + ww // 2)         ; the quadrant the drag began in
     top := (my < wy + wh // 2)
@@ -155,19 +161,29 @@ RestoreIfMaximized(hwnd, mx, my) {
 ; Float the window if komorebi tiles it: `komorebic toggle-float` acts on
 ; the focused window, so focus it first. Asking komorebi's state once per
 ; drag is a process spawn, fine for a discrete step (not per frame).
-FloatIfTiled(hwnd) {
-    if IsFloating(hwnd)
+FloatIfTiled(hwnd, statePid := 0) {
+    if IsFloating(hwnd, statePid)
         return
     try WinActivate "ahk_id " hwnd
     RunWait KOMOREBIC " toggle-float", , "Hide"
 }
 
-; True when komorebi does not tile the window: it is in a workspace's
-; floating_windows, or komorebi does not manage it at all.
-IsFloating(hwnd) {
+; Starts `komorebic state` in the background, writing to a temp file; returns the
+; PID to wait on (IsFloating does).
+PrefetchState() {
     tmp := A_Temp "\komorebi-state.json"
     try FileDelete tmp
-    RunWait A_ComSpec ' /c ' KOMOREBIC ' state > "' tmp '"', , "Hide"
+    Run A_ComSpec ' /c ' KOMOREBIC ' state > "' tmp '"', , "Hide", &pid
+    return pid
+}
+
+; True when komorebi does not tile the window: it is in a workspace's
+; floating_windows, or komorebi does not manage it at all.
+IsFloating(hwnd, statePid := 0) {
+    tmp := A_Temp "\komorebi-state.json"
+    if !statePid
+        statePid := PrefetchState()
+    ProcessWaitClose statePid, 2
     state := ""
     try state := FileRead(tmp)
     if (state = "")
