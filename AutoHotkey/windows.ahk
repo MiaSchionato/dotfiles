@@ -31,22 +31,10 @@ lastClick := 0
 ; kanata swallows the Win key (tap = launcher, hold = command layer), so AHK
 ; never sees it. While Win is held kanata holds F24 (virtual key vk-win in
 ; the kanata config), and F24 stands for Win here. GetKeyState("F24") always
-; answers 0 for a key kanata injects, so winHeld tracks it instead. When Win
-; goes down komorebi's state is read in the background (statePid): by the time
-; the drag starts we already know which windows are floating.
+; answers 0 for a key kanata injects, so winHeld tracks it instead.
 winHeld := false
 lHeld := false
 rHeld := false
-statePid := 0
-stateAt := 0
-~F24:: {
-    global winHeld, statePid, stateAt
-    if winHeld
-        return                          ; auto-repeat
-    winHeld := true
-    statePid := PrefetchState()
-    stateAt := A_TickCount
-}
 ~F24 up:: global winHeld := false
 
 ; Win + left click arrives from kanata as F20 (vk-lclick in the kanata config):
@@ -80,7 +68,7 @@ F22:: ToggleScratchpad()
 
 
 DragOrToggle() {
-    global lastClick, winHeld, statePid
+    global lastClick, winHeld
     winHeld := true              ; F20 comes with Win held
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
@@ -91,14 +79,23 @@ DragOrToggle() {
     ; Focus and raise the window at once: the drag moves it with NOACTIVATE, so
     ; without this a window that was behind stays behind. komorebi follows the
     ; focus change by itself.
+    ; Is the window tiled? Asked in the background while the button is still
+    ; waiting for its first pixel, so a floating window finds the answer ready.
+    ; A window already in focus is asked about at once; one that has to be
+    ; focused first waits 25 ms for komorebi to hear about the focus change.
+    askAfter := WinActive("ahk_id " hwnd) ? 0 : 25
     try WinActivate "ahk_id " hwnd
     DllCall("winmm\timeBeginPeriod", "UInt", 1)    ; 1 ms Sleep, not 15
+    kindQuery := ""
+    pressedAt := A_TickCount
     started := false
     lastX := lastY := ""
     began := A_TickCount
     while winHeld && lHeld {
         MouseGetPos &mx, &my
         if !started {
+            if (kindQuery = "" && A_TickCount - pressedAt >= askAfter)
+                kindQuery := StartKindQuery()
             if (mx = mx0 && my = my0) {
                 Sleep 1
                 continue
@@ -110,7 +107,7 @@ DragOrToggle() {
             WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
             fx := ww ? (mx0 - wx) / ww : 0.5
             fy := wh ? (my0 - wy) / wh : 0.5
-            EnsureFloating(hwnd)
+            EnsureFloating(hwnd, kindQuery ? ReadKind(kindQuery) : QueryKind())
             if (WinGetMinMax("ahk_id " hwnd) = 1) {     ; Adobe windows: maximized
                 WinRestore "ahk_id " hwnd
                 Sleep 60
@@ -136,7 +133,6 @@ DragOrToggle() {
     ; Pressed and released without moving: a click. Two close ones toggle.
     if (A_TickCount - lastClick < DOUBLE_CLICK_MS) {
         lastClick := 0
-        statePid := 0                   ; the cached state is stale now
         Run KOMOREBIC " toggle-float", , "Hide"
     } else {
         lastClick := A_TickCount
@@ -156,7 +152,8 @@ ResizeWindow() {
         return                          ; maximized: nothing to resize
 
     try WinActivate "ahk_id " hwnd      ; focus and raise it, as the move does
-    EnsureFloating(hwnd)
+    FocusWindow(hwnd)
+    EnsureFloating(hwnd, QueryKind())
     WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
     left := (mx < wx + ww // 2)         ; the quadrant the drag began in
     top := (my < wy + wh // 2)
@@ -186,23 +183,14 @@ ResizeWindow() {
 
 ; Make sure komorebi does not tile the window, without it noticing a fight:
 ; `komorebic toggle-float` acts on the focused window, so the window has to be
-; focused first. Whether it is tiled comes from the state read when Win went
-; down, or, if that is not ready, from asking komorebi about the focused window
-; (a few ms). Then wait for komorebi to lay the window out as a floating one.
-EnsureFloating(hwnd) {
-    global statePid
-    floating := KnownFloating(hwnd)
-    if (floating = -1) {
-        FocusWindow(hwnd)
-        kind := QueryKind()
-        floating := !(kind = "Single" || kind = "Stack" || kind = "Monocle")
-    }
-    if floating
-        return
+; focused first. kind is komorebi's view of the focused window (QueryKind);
+; then wait for komorebi to lay the window out as a floating one.
+EnsureFloating(hwnd, kind) {
+    if !(kind = "Single" || kind = "Stack" || kind = "Monocle")
+        return                          ; Floating (or no answer): leave it alone
     FocusWindow(hwnd)
     WinGetPos &x0, &y0, &w0, &h0, "ahk_id " hwnd
     RunWait KOMOREBIC " toggle-float", , "Hide"
-    statePid := 0                       ; the cached state is stale now
     t := A_TickCount
     while (A_TickCount - t < 150) {
         WinGetPos &x, &y, &w, &h, "ahk_id " hwnd
@@ -223,55 +211,20 @@ FocusWindow(hwnd) {
 }
 
 ; komorebi's view of the focused window: Single / Stack / Monocle when tiled,
-; Floating when not.
-QueryKind() {
-    try {
-        exec := ComObject("WScript.Shell").Exec(KOMOREBIC " query focused-container-kind")
-        return Trim(exec.StdOut.ReadAll(), " `t`r`n")
-    }
+; Floating when not. StartKindQuery does not wait; ReadKind waits for the answer.
+StartKindQuery() {
+    try return ComObject("WScript.Shell").Exec(KOMOREBIC " query focused-container-kind")
     return ""
 }
 
-; 1 / 0 from the state read when Win went down, -1 when there is none.
-KnownFloating(hwnd) {
-    global statePid, stateAt
-    if (!statePid || A_TickCount - stateAt > 10000)
-        return -1
-    if ProcessExist(statePid)
-        ProcessWaitClose statePid, 0.15
-    if ProcessExist(statePid)
-        return -1
-    return IsFloating(hwnd, statePid) ? 1 : 0
+ReadKind(exec) {
+    try return Trim(exec.StdOut.ReadAll(), " `t`r`n")
+    return ""
 }
 
-; Starts `komorebic state` in the background, writing to a temp file; returns the
-; PID to wait on (IsFloating does).
-PrefetchState() {
-    tmp := A_Temp "\komorebi-state.json"
-    try FileDelete tmp
-    Run A_ComSpec ' /c ' KOMOREBIC ' state > "' tmp '"', , "Hide", &pid
-    return pid
-}
-
-; True when komorebi does not tile the window: it is in a workspace's
-; floating_windows, or komorebi does not manage it at all.
-IsFloating(hwnd, statePid := 0) {
-    tmp := A_Temp "\komorebi-state.json"
-    if !statePid
-        statePid := PrefetchState()
-    ProcessWaitClose statePid, 2
-    state := ""
-    try state := FileRead(tmp)
-    if (state = "")
-        return true                     ; no answer: do not touch komorebi
-    pos := 1
-    while RegExMatch(state, 's)"floating_windows":\s*\{\s*"elements":\s*\[(.*?)\]\s*,\s*"focused"', &m, pos) {
-        if RegExMatch(m[1], '"hwnd":\s*' hwnd '\b')
-            return true
-        pos := m.Pos + m.Len
-    }
-    ; Tiled windows are in a container's windows; no match anywhere: unmanaged
-    return !RegExMatch(state, '"hwnd":\s*' hwnd '\b')
+QueryKind() {
+    exec := StartKindQuery()
+    return exec ? ReadKind(exec) : ""
 }
 
 
