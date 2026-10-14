@@ -48,11 +48,11 @@ window_effects:
     corner_style:
       enabled: false
       style: 'square'
-    # Unfocused windows 4% transparent, as in komorebi (245/255 = 96%), on
-    # purpose (Mia, 2026-10-14).
+    # Unfocused windows slightly transparent on purpose (Mia, 2026-10-14):
+    # 98%. komorebi had 245/255 = 96%.
     transparency:
       enabled: true
-      opacity: '96%'
+      opacity: '98%'
 
 window_behavior:
   initial_state: 'tiling'
