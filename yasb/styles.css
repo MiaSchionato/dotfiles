@@ -1,27 +1,29 @@
 /*
- * After the old waybar (dotfiles, branch main, waybar/style.css):
- *   bar        #0F0F17, 1px #89B4FA border, fully rounded (a pill)
- *   text       #A1BDCE, bold JetBrains Mono Nerd Font
- *   muted      #888789 (empty workspaces, media)
- *   hover      #72D792
- *   tooltips   #171717 on a 2px #89B4FA border
+ * After the Omarchy bar, in the ethereal colours (2026-10-14):
+ *   bar        #060B1E (ethereal bg), flat, no border
+ *   text       #ffcead (ethereal fg), bold JetBrains Mono Nerd Font
+ *   muted      #6d7db6 (empty / secondary)
+ *   accent     #82aaff (the blue of the old vim-mode badge): current workspace
+ *   hover      #92a593
+ *   popups     #060B1E on a 1px #6d7db6 border
+ * Every theme gets its own colours when the theme command exists.
  */
 
 * {
     font-family: "JetBrainsMono NF";
     font-size: 13px;
     font-weight: 700;
-    color: #A1BDCE;
+    color: #ffcead;
 }
 
 .yasb-bar {
-    background-color: #0F0F17;
-    border: 1px solid #89B4FA;
-    border-radius: 13px;
+    background-color: #060B1E;
+    border: none;
+    border-radius: 0;
 }
 
-.container-left { padding-left: 6px; }
-.container-right { padding-right: 6px; }
+.container-left { padding-left: 10px; }
+.container-right { padding-right: 10px; }
 
 .widget {
     background-color: transparent;
@@ -30,37 +32,39 @@
 
 .widget .label { padding: 0 2px; }
 
-/* Workspaces: muted when empty, light when used, blue when current. */
+/* Workspaces: small round dots. Muted when idle, light when used, a bigger
+   blue one when current. */
 .komorebi-workspaces .ws-btn {
     background-color: transparent;
     border: none;
-    color: #888789;
-    padding: 0 5px;
+    color: #6d7db6;
+    font-size: 7px;
+    padding: 0 4px;
     margin: 0 1px;
 }
-.komorebi-workspaces .ws-btn.populated { color: #A1BDCE; }
-.komorebi-workspaces .ws-btn.active { color: #89B4FA; }
-.komorebi-workspaces .ws-btn:hover { color: #72D792; }
+.komorebi-workspaces .ws-btn.populated { color: #ffcead; }
+.komorebi-workspaces .ws-btn.active { color: #82aaff; font-size: 10px; }
+.komorebi-workspaces .ws-btn:hover { color: #92a593; }
 
-.media-widget .label { color: #888789; font-weight: 600; }
+.media-widget .label { color: #6d7db6; font-weight: 600; }
 
 .active-window-widget .label { font-weight: 600; }
 
-.clock-widget .label { color: #A1BDCE; }
+.clock-widget .label { color: #ffcead; }
 
 .systray .unpinned-visibility-btn {
     border: none;
     background: transparent;
-    color: #888789;
+    color: #6d7db6;
 }
 
-/* Popups and tooltips, as the waybar's. */
+/* Popups and tooltips. */
 QToolTip,
 .clock-popup.calendar,
 .media-menu {
-    background-color: #171717;
-    color: #A1BDCE;
-    border: 2px solid #89B4FA;
+    background-color: #060B1E;
+    color: #ffcead;
+    border: 1px solid #6d7db6;
     border-radius: 7px;
 }
 

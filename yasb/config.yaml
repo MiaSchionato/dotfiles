@@ -1,7 +1,7 @@
-# yasb, after Mia's Hyprland waybar (dotfiles, branch main, waybar/):
-# a pill-shaped bar with a thin blue border; workspaces and media on the
-# left, the window title in the middle, tray, memory, CPU, clock and
-# notifications on the right. Styles in styles.css next to this file.
+# yasb, after the Omarchy bar (2026-10-14), in the ethereal colours: flat, low,
+# no border; small round workspace dots and the media on the left, the clock
+# in the middle, Todoist, tray, memory, CPU and notifications on the right.
+# Styles in styles.css next to this file.
 watch_stylesheet: true
 watch_config: true
 debug: false
@@ -29,17 +29,17 @@ bars:
       hide_on_fullscreen: true
     dimensions:
       width: "100%"
-      height: 32
-    # The waybar sat 10px in from each side, flush with the top.
+      height: 26
+    # Flush with the top and the sides, as the Omarchy bar.
     padding:
-      top: 4
-      left: 10
-      bottom: 2
-      right: 10
+      top: 0
+      left: 0
+      bottom: 0
+      right: 0
     widgets:
-      left: ["vim_mode", "komorebi_workspaces", "media"]
-      center: ["active_window"]
-      right: ["todoist", "systray", "memory", "cpu", "clock", "notifications"]
+      left: ["komorebi_workspaces", "media"]
+      center: ["clock"]
+      right: ["todoist", "systray", "memory", "cpu", "notifications"]
 
 widgets:
   # The vim-like mode (2026-10-08): one letter (I in INSERT).
@@ -99,11 +99,11 @@ widgets:
     type: "komorebi.workspaces.WorkspaceWidget"
     options:
       label_offline: ""
-      # Named workspaces (Premiere, Resolve…) show their name; the others
-      # their number, as the waybar did.
-      label_workspace_btn: "{name}"
-      label_workspace_active_btn: "{name}"
-      label_workspace_populated_btn: "{name}"
+      # Small round dots (2026-10-14): the colour tells the state (see
+      # styles.css), the dot's size too. Empty workspaces are hidden.
+      label_workspace_btn: "●"
+      label_workspace_active_btn: "●"
+      label_workspace_populated_btn: "●"
       label_default_name: "{index}"
       label_zero_index: false
       hide_empty_workspaces: true
