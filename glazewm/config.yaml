@@ -8,9 +8,11 @@ general:
   config_reload_commands: []
   # The pointer is not moved by the WM (it teleported during drags).
   focus_follows_cursor: false
-  # true: focusing the workspace you are on goes back to the previous one (Win+P,
-  # Win+R, Win+G back and forth, with no script: Mia, 2026-10-15).
-  toggle_workspace_on_refocus: true
+  # false on purpose: with true, `move --workspace X` on a window already in X sends it
+  # to the previous workspace, and GlazeWM re-runs the window rules at every reload, so a
+  # reload bounced every window that has a workspace rule. The back-and-forth of the
+  # workspace shortcuts is in windows.ahk (over the socket) instead.
+  toggle_workspace_on_refocus: false
   cursor_jump:
     enabled: false
     trigger: 'monitor_focus'
@@ -68,28 +70,24 @@ window_behavior:
       # window, and Zen kept the flag even after leaving fullscreen (Mia, 2026-10-15).
       shown_on_top: false
 
-# bind_to_monitor: 0 is the leftmost screen (left, centre, right).
+# bind_to_monitor: 0 is the leftmost screen (left, centre, right). A workspace
+# WITHOUT it opens on the monitor in focus (like a scratchpad: focus a monitor, call
+# the workspace, it shows up there). left / main / right are the home screens; Editor
+# (every video editor) and Motion (every motion app) are tied to the centre.
 workspaces:
   - name: 'left'
     bind_to_monitor: 0
   - name: 'main'
     bind_to_monitor: 1
+  - name: 'Editor'
+    bind_to_monitor: 1
+  - name: 'Motion'
+    bind_to_monitor: 1
   - name: 'Nvim'
-    bind_to_monitor: 1
-  - name: 'AfterFX'
-    bind_to_monitor: 1
-  - name: 'Premiere'
-    bind_to_monitor: 1
-  - name: 'Resolve'
-    bind_to_monitor: 1
   - name: 'Browser'
-    bind_to_monitor: 1
   - name: 'Claude'
-    bind_to_monitor: 1
   - name: 'WhatsApp'
-    bind_to_monitor: 1
   - name: 'Scratchpad'
-    bind_to_monitor: 1
   - name: 'right'
     bind_to_monitor: 2
 
@@ -105,6 +103,7 @@ window_rules:
       - window_process: { equals: 'Flow.Launcher' }
       - window_class: { equals: 'CabinetWClass' }
       - window_process: { equals: 'Adobe Premiere Pro' }
+      - window_process: { equals: 'Resolve' }
       - window_process: { equals: 'AfterFX' }
       - window_class: { equals: 'AE_CApplication' }
       - window_process: { equals: 'Epidemic Sound' }
@@ -115,13 +114,13 @@ window_rules:
   - commands: ['move --workspace Nvim']
     match:
       - window_process: { equals: 'nvim-wezterm' }
-  - commands: ['move --workspace AfterFX']
+  - commands: ['move --workspace Motion']
     match:
       - window_process: { equals: 'AfterFX' }
-  - commands: ['move --workspace Premiere']
+  - commands: ['move --workspace Editor']
     match:
       - window_process: { equals: 'Adobe Premiere Pro' }
-  - commands: ['move --workspace Resolve']
+  - commands: ['move --workspace Editor']
     match:
       - window_process: { equals: 'Resolve' }
   - commands: ['move --workspace Browser']
@@ -171,7 +170,7 @@ keybindings:
   - commands: ['toggle-fullscreen --maximized']
     bindings: ['ctrl+alt+lwin+shift+f']
   - commands: ['toggle-minimized']
-    bindings: ['ctrl+alt+lwin+m']
+    bindings: ['ctrl+alt+lwin+i']
   - commands: ['wm-cycle-focus']
     bindings: ['ctrl+alt+lwin+oem_open_brackets', 'ctrl+alt+lwin+oem_close_brackets']
   - commands: ['focus --monitor 0']
@@ -186,11 +185,3 @@ keybindings:
     bindings: ['ctrl+alt+lwin+oem_period']
   - commands: ['wm-reload-config']
     bindings: ['ctrl+alt+lwin+shift+o']
-  - commands: ['focus --workspace Premiere']
-    bindings: ['ctrl+alt+lwin+p']
-  # A and not R for AfterFX: Ctrl+Alt+Win+R never reached GlazeWM (Windows' own
-  # Win+Alt+R, Game Bar's record shortcut, is the suspect).
-  - commands: ['focus --workspace AfterFX']
-    bindings: ['ctrl+alt+lwin+a']
-  - commands: ['focus --workspace Scratchpad']
-    bindings: ['ctrl+alt+lwin+g']
