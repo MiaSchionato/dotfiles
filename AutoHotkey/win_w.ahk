@@ -23,7 +23,7 @@ CloseOrCtrlW(process) {
 ; in those two apps, Esc becomes Delete. kanata keeps sending a plain Esc, so if this
 ; script is not running nothing breaks except the Delete. The catch: the physical Esc key
 ; becomes Delete there too (Caps tap is the Esc of this keyboard).
-ESC_IS_DELETE_APPS := ["Adobe Premiere Pro.exe", "AfterFX.exe", "filmcraft.exe"]
+ESC_IS_DELETE_APPS := ["Adobe Premiere Pro.exe", "AfterFX.exe", "filmcraft.exe", "effectcraft.exe"]
 
 EscIsDeleteHere() {
     process := ""
