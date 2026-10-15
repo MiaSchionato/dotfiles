@@ -8,7 +8,9 @@ general:
   config_reload_commands: []
   # The pointer is not moved by the WM (it teleported during drags).
   focus_follows_cursor: false
-  toggle_workspace_on_refocus: false
+  # true: focusing the workspace you are on goes back to the previous one (Win+P,
+  # Win+R, Win+G back and forth, with no script: Mia, 2026-10-15).
+  toggle_workspace_on_refocus: true
   cursor_jump:
     enabled: false
     trigger: 'monitor_focus'
@@ -184,3 +186,11 @@ keybindings:
     bindings: ['ctrl+alt+lwin+oem_period']
   - commands: ['wm-reload-config']
     bindings: ['ctrl+alt+lwin+shift+o']
+  - commands: ['focus --workspace Premiere']
+    bindings: ['ctrl+alt+lwin+p']
+  # A and not R for AfterFX: Ctrl+Alt+Win+R never reached GlazeWM (Windows' own
+  # Win+Alt+R, Game Bar's record shortcut, is the suspect).
+  - commands: ['focus --workspace AfterFX']
+    bindings: ['ctrl+alt+lwin+a']
+  - commands: ['focus --workspace Scratchpad']
+    bindings: ['ctrl+alt+lwin+g']
