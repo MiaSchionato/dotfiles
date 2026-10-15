@@ -29,6 +29,7 @@ lHeld := false
 rHeld := false
 queryPid := 0
 queryAt := 0
+glazeRect := []             ; x, y, width, height of the last window GlazeInfo found
 
 ; Warm-up: the first call of the CLI is slow (cold start of the executable);
 ; do it now, not on the first Win + click.
@@ -382,13 +383,20 @@ RestoreIfMaximized(hwnd, mx, my) {
 
 ; Float a tiled window where it is (same position and size, not centered), so it
 ; does not jump. GlazeWM takes the window by id: no focus needed, no race.
+; The rectangle is GlazeWM's own (physical pixels), not WinGetPos's: this script
+; is DPI-aware for the system scale, and on a monitor with another scale (the
+; right one) its coordinates are not GlazeWM's, so the window used to land a
+; hundred pixels from where it was grabbed.
 FloatIfTiled(hwnd, queryPid := 0) {
+    global glazeRect
     id := GlazeInfo(hwnd, &state, queryPid)
     if (!id || state != "tiling")
         return
-    WinGetPos &x, &y, &w, &h, "ahk_id " hwnd
-    RunWait GLAZE ' command --id ' id ' set-floating --centered=false --x-pos ' x
-        . ' --y-pos ' y ' --width ' w ' --height ' h, , "Hide"
+    if (glazeRect.Length = 4)
+        RunWait GLAZE ' command --id ' id ' set-floating --centered=false --x-pos ' glazeRect[1]
+            . ' --y-pos ' glazeRect[2] ' --width ' glazeRect[3] ' --height ' glazeRect[4], , "Hide"
+    else
+        RunWait GLAZE ' command --id ' id ' set-floating --centered=false', , "Hide"
 }
 
 ; Starts `glazewm query windows` in the background, into a temp file; returns
@@ -406,6 +414,7 @@ PrefetchWindows() {
 ; type (tiling / floating / minimized / fullscreen). "" when GlazeWM does not
 ; manage it. Waits for the query only if it has not finished.
 GlazeInfo(hwnd, &state, queryPid := 0) {
+    global glazeRect
     tmp := A_Temp "\glazewm-windows.json"
     if !queryPid
         queryPid := PrefetchWindows()
@@ -418,6 +427,9 @@ GlazeInfo(hwnd, &state, queryPid := 0) {
             continue
         if RegExMatch(chunk, '"id":"([^"]+)"', &mi) && RegExMatch(chunk, '"state":\{"type":"(\w+)"', &ms) {
             state := ms[1]
+            glazeRect := []
+            if RegExMatch(chunk, '"width":(-?\d+),"height":(-?\d+),"x":(-?\d+),"y":(-?\d+)', &mg)
+                glazeRect := [mg[3], mg[4], mg[1], mg[2]]   ; x, y, width, height
             return mi[1]
         }
     }
