@@ -463,7 +463,7 @@ CanMove(hwnd) {
     return true
 }
 
-; Premiere and After Effects: the CapsLock tap (an Esc from kanata) is a Delete there.
+; Premiere, After Effects and Filmcraft: the CapsLock tap (an Esc from kanata) is a Delete there.
 #HotIf EscIsDeleteHere()
 Esc:: Send "{Delete}"
 #HotIf
