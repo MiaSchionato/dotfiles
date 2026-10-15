@@ -65,6 +65,83 @@ Run GLAZE ' query app-metadata', , "Hide"
 ~LButton:: FocusMonitorOfEmptyClick()
 
 
+; Snap, like Windows': drag a window with Win + left button to a screen edge and
+; a preview shows the side; letting go there puts it back in the tiling (left /
+; right edge; the preview is only a hint, GlazeWM picks the tile) or fullscreen
+; (top edge). Anywhere else it stays
+; floating where it was dropped.
+SNAP_EDGE := 40             ; px from the monitor edge that count as "at the edge"
+SNAP_MIN_TRAVEL := 150      ; px the cursor must have moved: a press that starts
+                            ; at an edge must not snap on its own
+snapGui := ""
+snapKind := ""
+
+; The zone under the cursor: {kind: "left" | "right" | "top", x, y, w, h} (the
+; preview rectangle, in the monitor's work area), or "" for none.
+SnapZoneAt(mx, my, mx0, my0) {
+    if (Abs(mx - mx0) < SNAP_MIN_TRAVEL && Abs(my - my0) < SNAP_MIN_TRAVEL)
+        return ""
+    Loop MonitorGetCount() {
+        MonitorGet A_Index, &l, &t, &r, &b
+        if (mx < l || mx >= r || my < t || my >= b)
+            continue
+        MonitorGetWorkArea A_Index, &wl, &wt, &wr, &wb
+        half := (wr - wl) // 2
+        if (my - t < SNAP_EDGE)
+            return {kind: "top", x: wl, y: wt, w: wr - wl, h: wb - wt}
+        if (mx - l < SNAP_EDGE)
+            return {kind: "left", x: wl, y: wt, w: half, h: wb - wt}
+        if (r - 1 - mx < SNAP_EDGE)
+            return {kind: "right", x: wl + half, y: wt, w: half, h: wb - wt}
+        return ""
+    }
+    return ""
+}
+
+; Shows (or moves, or hides) the preview: a click-through blue rectangle.
+SnapPreview(zone) {
+    global snapGui, snapKind
+    kind := zone ? zone.kind : ""
+    if (kind = snapKind)
+        return
+    snapKind := kind
+    if !zone {
+        if snapGui
+            snapGui.Hide()
+        return
+    }
+    if !snapGui {
+        snapGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000 +E0x20")
+        snapGui.BackColor := "7d82d9"
+    }
+    snapGui.Show("NA x" zone.x " y" zone.y " w" zone.w " h" zone.h)
+    WinSetTransparent 70, snapGui
+}
+
+; The button went up: take the preview away and, in a zone, snap the window.
+SnapFinish(hwnd, zone) {
+    global snapGui, snapKind
+    if snapGui {
+        try snapGui.Destroy()
+        snapGui := ""
+    }
+    snapKind := ""
+    if !zone
+        return
+    Sleep 150                               ; let GlazeWM take in where the drag ended
+    id := GlazeInfo(hwnd, &state, PrefetchWindows())
+    if !id
+        return
+    if (zone.kind = "top") {
+        Run GLAZE ' command --id ' id ' set-fullscreen', , "Hide"
+        return
+    }
+    ; No `move --direction` after it: on the first tile of a workspace that moves
+    ; the window to the next monitor (it did, in a test). It lands beside the
+    ; focused window of the workspace it was dropped on.
+    Run GLAZE ' command --id ' id ' set-tiling', , "Hide"
+}
+
 FocusMonitorOfEmptyClick() {
     static lastRun := 0
     CoordMode "Mouse", "Screen"
@@ -131,6 +208,8 @@ DragOrToggle() {
                 break                       ; the window closed mid-drag
             lastX := mx, lastY := my
         }
+        if started
+            SnapPreview(SnapZoneAt(mx, my, mx0, my0))
         if (A_TickCount - began > 30000)
             break                           ; safety brake
         ; One move per composed frame (DWM ticks at the fastest monitor, 240 Hz
@@ -139,8 +218,10 @@ DragOrToggle() {
     }
     DllCall("winmm\timeEndPeriod", "UInt", 1)
 
-    if started
+    if started {
+        SnapFinish(hwnd, SnapZoneAt(mx, my, mx0, my0))
         return
+    }
     ; Pressed and released without moving: a click. Two close ones toggle.
     if (A_TickCount - lastClick < DOUBLE_CLICK_MS) {
         lastClick := 0
