@@ -59,6 +59,40 @@ Run GLAZE ' query app-metadata', , "Hide"
 ; its close button; an app may ask to save first).
 ~F19:: CloseWindowUnderCursor()
 
+; A click on the bare desktop (an empty workspace has no window to click) focuses
+; that monitor in GlazeWM, so the next app opens there: GlazeWM puts a new window
+; on the workspace of the focused container, not where the pointer is.
+~LButton:: FocusMonitorOfEmptyClick()
+
+
+FocusMonitorOfEmptyClick() {
+    static lastRun := 0
+    CoordMode "Mouse", "Screen"
+    MouseGetPos &mx, &my, &hwnd
+    cls := ""
+    try cls := WinGetClass("ahk_id " hwnd)
+    if (cls != "Progman" && cls != "WorkerW")
+        return                              ; a real window was clicked
+    if (A_TickCount - lastRun < 300)
+        return
+    lastRun := A_TickCount
+    ; GlazeWM numbers the monitors left to right.
+    lefts := []
+    pos := ""
+    Loop MonitorGetCount() {
+        MonitorGet A_Index, &l, &t, &r, &b
+        lefts.Push(l)
+        if (mx >= l && mx < r && my >= t && my < b)
+            pos := l
+    }
+    if (pos = "")
+        return
+    index := 0
+    for l in lefts
+        if (l < pos)
+            index++
+    Run GLAZE ' command focus --monitor ' index, , "Hide"
+}
 
 DragOrToggle() {
     global lastClick, winHeld, queryPid, queryAt
