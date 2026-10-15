@@ -142,4 +142,45 @@ window_rules:
 
 binding_modes: []
 
-keybindings: []
+# kanata sends these chords (Ctrl+Alt+Win + key, the ones whkd used to take) for
+# the simple window actions: GlazeWM catches them itself, no CLI process in
+# between (Mia, 2026-10-15). The ones with logic (workspaces back and forth,
+# moving a floating window to another monitor, quick look...) stay as kanata
+# cmd actions with nu.
+keybindings:
+  - commands: ['focus --direction left']
+    bindings: ['ctrl+alt+lwin+h']
+  - commands: ['move --direction left']
+    bindings: ['ctrl+alt+lwin+shift+h']
+  - commands: ['focus --direction down']
+    bindings: ['ctrl+alt+lwin+j']
+  - commands: ['move --direction down']
+    bindings: ['ctrl+alt+lwin+shift+j']
+  - commands: ['focus --direction up']
+    bindings: ['ctrl+alt+lwin+k']
+  - commands: ['move --direction up']
+    bindings: ['ctrl+alt+lwin+shift+k']
+  - commands: ['focus --direction right']
+    bindings: ['ctrl+alt+lwin+l']
+  - commands: ['move --direction right']
+    bindings: ['ctrl+alt+lwin+shift+l']
+  - commands: ['toggle-floating']
+    bindings: ['ctrl+alt+lwin+f']
+  - commands: ['toggle-fullscreen --maximized']
+    bindings: ['ctrl+alt+lwin+shift+f']
+  - commands: ['toggle-minimized']
+    bindings: ['ctrl+alt+lwin+m']
+  - commands: ['wm-cycle-focus']
+    bindings: ['ctrl+alt+lwin+oem_open_brackets', 'ctrl+alt+lwin+oem_close_brackets']
+  - commands: ['focus --monitor 0']
+    bindings: ['ctrl+alt+lwin+1']
+  - commands: ['focus --monitor 1']
+    bindings: ['ctrl+alt+lwin+2']
+  - commands: ['focus --monitor 2']
+    bindings: ['ctrl+alt+lwin+3']
+  - commands: ['focus --workspace-in-direction left']
+    bindings: ['ctrl+alt+lwin+oem_comma']
+  - commands: ['focus --workspace-in-direction right']
+    bindings: ['ctrl+alt+lwin+oem_period']
+  - commands: ['wm-reload-config']
+    bindings: ['ctrl+alt+lwin+shift+o']
