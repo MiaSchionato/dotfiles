@@ -17,3 +17,23 @@ WinWKeys(process) {
 CloseOrCtrlW(process) {
     Send WinWKeys(process)
 }
+
+; CapsLock tap is Esc (kanata); inside Premiere and After Effects it has to be Delete. The
+; yasb widget that switched kanata's layer for this is not in the bar any more, so here:
+; in those two apps, Esc becomes Delete. kanata keeps sending a plain Esc, so if this
+; script is not running nothing breaks except the Delete. The catch: the physical Esc key
+; becomes Delete there too (Caps tap is the Esc of this keyboard).
+ESC_IS_DELETE_APPS := ["Adobe Premiere Pro.exe", "AfterFX.exe"]
+
+EscIsDeleteHere() {
+    process := ""
+    try process := WinGetProcessName("A")
+    return EscIsDeleteIn(process)
+}
+
+EscIsDeleteIn(process) {
+    for app in ESC_IS_DELETE_APPS
+        if (process = app)
+            return true
+    return false
+}

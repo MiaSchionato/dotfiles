@@ -462,3 +462,8 @@ CanMove(hwnd) {
             return false
     return true
 }
+
+; Premiere and After Effects: the CapsLock tap (an Esc from kanata) is a Delete there.
+#HotIf EscIsDeleteHere()
+Esc:: Send "{Delete}"
+#HotIf
