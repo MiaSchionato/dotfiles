@@ -76,8 +76,9 @@ SNAP_MIN_TRAVEL := 150      ; px the cursor must have moved: a press that starts
 snapGui := ""
 snapKind := ""
 
-; The zone under the cursor: {kind: "left" | "right" | "top", x, y, w, h} (the
-; preview rectangle, in the monitor's work area), or "" for none.
+; The zone under the cursor: {kind: "left" | "right" | "top", x, y, w, h, left,
+; right} (the preview rectangle in the monitor's work area, and the monitor's
+; left and right edges), or "" for none.
 SnapZoneAt(mx, my, mx0, my0) {
     if (Abs(mx - mx0) < SNAP_MIN_TRAVEL && Abs(my - my0) < SNAP_MIN_TRAVEL)
         return ""
@@ -111,7 +112,9 @@ SnapPreview(zone) {
         return
     }
     if !snapGui {
-        snapGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000 +E0x20")
+        ; -DPIScale: the rectangle is in screen pixels, not scaled by the system DPI (it
+        ; overshot the half of the monitor when scaled).
+        snapGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000 +E0x20 -DPIScale")
         snapGui.BackColor := "7d82d9"
     }
     snapGui.Show("NA x" zone.x " y" zone.y " w" zone.w " h" zone.h)
@@ -136,10 +139,52 @@ SnapFinish(hwnd, zone) {
         Run GLAZE ' command --id ' id ' set-fullscreen', , "Hide"
         return
     }
-    ; No `move --direction` after it: on the first tile of a workspace that moves
-    ; the window to the next monitor (it did, in a test). It lands beside the
-    ; focused window of the workspace it was dropped on.
-    Run GLAZE ' command --id ' id ' set-tiling', , "Hide"
+    RunWait GLAZE ' command --id ' id ' set-tiling', , "Hide"
+    Sleep 250
+    PutOnSide(hwnd, zone)
+}
+
+; set-tiling puts the window beside the focused one, whichever side that is. Where
+; the window ended up on the wrong side of the others tiled on its monitor, one
+; `move --direction` swaps it. Alone on the monitor there is no side, and a move
+; would only send it to the next monitor, so then nothing is done. The monitor
+; comes from GlazeWM's own tree (`query monitors`): this script's coordinates are
+; not GlazeWM's on a monitor with another DPI scale.
+PutOnSide(hwnd, zone) {
+    tmp := A_Temp "\glazewm-monitors.json"
+    try FileDelete tmp
+    RunWait A_ComSpec ' /c "' GLAZE ' query monitors > "' tmp '""', , "Hide"
+    json := ""
+    try json := FileRead(tmp)
+    for monitor in StrSplit(json, '{"type":"monitor"') {
+        mineId := "", mineX := ""
+        others := []
+        for chunk in StrSplit(monitor, '{"type":"window"') {
+            if !RegExMatch(chunk, '"handle":(\d+)', &mh)
+                continue
+            if !RegExMatch(chunk, '"state":\{"type":"(\w+)"', &ms) || ms[1] != "tiling"
+                continue
+            if !InStr(chunk, '"displayState":"shown"')
+                continue                    ; a window on a workspace that is not on screen
+            if !RegExMatch(chunk, '"width":-?\d+,"height":-?\d+,"x":(-?\d+),"y":', &mg)
+                continue
+            if (mh[1] = hwnd) {
+                RegExMatch(chunk, '"id":"([^"]+)"', &mi)
+                mineId := mi[1]
+                mineX := Integer(mg[1])
+            } else
+                others.Push(Integer(mg[1]))
+        }
+        if (mineId = "")
+            continue
+        wrong := false
+        for x in others
+            if (zone.kind = "left" ? mineX > x : mineX < x)
+                wrong := true
+        if wrong
+            Run GLAZE ' command --id ' mineId ' move --direction ' zone.kind, , "Hide"
+        return
+    }
 }
 
 FocusMonitorOfEmptyClick() {
