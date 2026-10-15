@@ -5,6 +5,13 @@
 ; widget vim_mode, which is not in the bar any more: this does it by itself.)
 CTRL_W_APPS := ["zen.exe", "Adobe Premiere Pro.exe", "filmcraft.exe"]
 
+; The process of the window in focus, or "" when there is none (an empty desktop):
+; WinGetProcessName("A") raises an error then, and a hotkey must not.
+ActiveProcess() {
+    try return WinGetProcessName("A")
+    return ""
+}
+
 ; The keys Win + W sends for a process: kept apart from the sending so it can be tested
 ; without pressing anything in a real window.
 WinWKeys(process) {
@@ -15,6 +22,12 @@ WinWKeys(process) {
 }
 
 CloseOrCtrlW(process) {
+    if (process = "")
+        return                              ; nothing in focus: nothing to close
+    cls := ""
+    try cls := WinGetClass("A")
+    if (cls = "Progman" || cls = "WorkerW" || cls = "Shell_TrayWnd")
+        return                              ; the desktop or the taskbar: Alt + F4 would open Windows' shutdown box
     Send WinWKeys(process)
 }
 
@@ -26,9 +39,7 @@ CloseOrCtrlW(process) {
 ESC_IS_DELETE_APPS := ["Adobe Premiere Pro.exe", "AfterFX.exe", "filmcraft.exe", "effectcraft.exe"]
 
 EscIsDeleteHere() {
-    process := ""
-    try process := WinGetProcessName("A")
-    return EscIsDeleteIn(process)
+    return EscIsDeleteIn(ActiveProcess())
 }
 
 EscIsDeleteIn(process) {
