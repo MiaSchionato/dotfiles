@@ -62,7 +62,9 @@ window_behavior:
       shown_on_top: false
     fullscreen:
       maximized: false
-      shown_on_top: true
+      # Not topmost: a fullscreen window set topmost stays above every floating
+      # window, and Zen kept the flag even after leaving fullscreen (Mia, 2026-10-15).
+      shown_on_top: false
 
 # bind_to_monitor: 0 is the leftmost screen (left, centre, right).
 workspaces:
