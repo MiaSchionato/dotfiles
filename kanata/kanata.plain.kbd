@@ -192,7 +192,7 @@
   ;; Win+S saves (Ctrl+S); Win+Shift+S is Windows' screenshot (Snipping
   ;; Tool), which Ctrl+Shift+S used to take.
   c-save (fork C-s M-S-s (lsft rsft))
-  expl M-e
+  expl (macro F23) ;; Win+E: windows.ahk goes to the File Explorer that is open, or opens one
   ;; Win+D stays show-desktop; Win+Shift+D reaches whkd instead.
   ;; Scratchpad workspace (notes: "Linux vs windows", Omarchy parity; Mia, 2026-10-14).
   ;; Win+G: go to the Scratchpad workspace, or back to the one before when already

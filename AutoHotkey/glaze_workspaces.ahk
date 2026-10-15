@@ -139,3 +139,40 @@ SendWorkspaceToMonitor(target) {
     loop Abs(target - here)
         Glaze.Send("command move-workspace --direction " direction)
 }
+
+
+; ---------------------------------------------------------------------------
+;  Win + E (kanata sends F23): one File Explorer, not one more each time. If an Explorer
+;  window exists, anywhere (any workspace, minimized too), go to it; else open one.
+; ---------------------------------------------------------------------------
+F23:: ExplorerOrNew()
+
+; The first File Explorer window (class CabinetWClass) in GlazeWM's `query windows`
+; answer: its container id, window handle and state, or false when there is none. Kept
+; apart from the doing so it can be tested without touching any window.
+FindExplorer(json, &id, &handle, &state) {
+    id := "", handle := "", state := ""
+    for chunk in StrSplit(json, '{"type":"window"') {
+        if !InStr(chunk, '"className":"CabinetWClass"')
+            continue
+        if RegExMatch(chunk, '"id":"([^"]+)"', &mi) && RegExMatch(chunk, '"state":\{"type":"(\w+)"', &ms)
+            && RegExMatch(chunk, '"handle":(\d+)', &mh) {
+            id := mi[1], handle := mh[1], state := ms[1]
+            return true
+        }
+    }
+    return false
+}
+
+; GlazeWM's focus brings its workspace to the screen, but a maximized window on it (a
+; video editor) keeps the focus; so the window itself is activated too, which raises it.
+ExplorerOrNew() {
+    if FindExplorer(Glaze.Ask("query windows"), &id, &handle, &state) {
+        if (state = "minimized")
+            Glaze.Send("command --id " id " toggle-minimized")
+        Glaze.Send("command focus --container-id " id)
+        Sleep 60
+        try WinActivate "ahk_id " handle
+    } else
+        Run "explorer.exe"
+}
