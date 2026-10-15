@@ -158,6 +158,40 @@ window_rules:
     match:
       - window_process: { equals: 'chrome' }
 
+  # Only the MAIN window of each app, maximized (not full screen: the bar stays), read
+  # from the classes and titles the windows have when they are created (2026-10-15):
+  # dialogs, splash screens and panels have other classes or titles and stay as they are.
+  - commands: ['set-fullscreen --maximized']
+    match:
+      # Premiere: the dialogs are #32770, the main window is class 'Premiere Pro'
+      - window_process: { equals: 'Adobe Premiere Pro' }
+        window_class: { equals: 'Premiere Pro' }
+      # Photoshop: the main window; panels and dialogs have other classes
+      - window_process: { equals: 'Photoshop' }
+        window_class: { equals: 'Photoshop' }
+      # DaVinci Resolve: the Project Manager ('Resolve' is the splash screen). The editing
+      # window's title changes with the project, so it has no rule here. (`regex` matchers
+      # did not match in the tests, `equals` does.)
+      - window_process: { equals: 'Resolve' }
+        window_title: { equals: 'Project Manager' }
+      # Filmcraft, Effectcraft, Photocraft: one main window, class 'Window Class'
+      - window_process: { equals: 'filmcraft' }
+        window_class: { equals: 'Window Class' }
+      - window_process: { equals: 'effectcraft' }
+        window_class: { equals: 'Window Class' }
+      - window_process: { equals: 'photocraft' }
+        window_class: { equals: 'Window Class' }
+      # Cavalry: the main window is born titled 'Cavalry' ('Welcome to Cavalry' and the
+      # console are other windows of the same app)
+      - window_process: { equals: 'Cavalry' }
+        window_class: { equals: 'Qt663QWindowIcon' }
+        window_title: { equals: 'Cavalry' }
+      # Affinity: the class carries a new GUID at each start, so only the title: the splash
+      # has none
+      - window_process: { equals: 'Affinity' }
+        window_title: { equals: 'Affinity' }
+      # After Effects already maximizes itself (it starts full screen): no rule
+
 binding_modes: []
 
 # kanata sends these chords (Ctrl+Alt+Win + key, the ones whkd used to take) for
