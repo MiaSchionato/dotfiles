@@ -11,38 +11,31 @@
 ;
 ;  kanata sends the gestures as keys (see windows.ahk): F24 = Win held,
 ;  F20 = left click (held while the button is), F21 = right click.
-;  GlazeWM's CLI acts on any window by id (`command --id`), so, unlike
-;  komorebic, the window does not have to be focused first.
+;  GlazeWM acts on any window by id (`command --id`), so, unlike komorebic,
+;  the window does not have to be focused first. The commands go over its own
+;  socket (glaze_ipc.ahk): a kept connection, about 0.2 ms a call.
 ; =============================================================
 
 #HotIf
 #SingleInstance Force
+#Include glaze_ipc.ahk          ; GlazeWM's socket (no CLI process, no helper script)
 
 DOUBLE_CLICK_MS := 350      ; two clicks closer than this are a double click
 DRAG_THRESHOLD := 3         ; px before a press counts as a drag: a hand always
                             ; moves the mouse a pixel or two inside a click
-GLAZE := '"C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe"'
 lastClick := 0
 lastRClick := 0
 winHeld := false
 lHeld := false
 rHeld := false
-queryPid := 0
-queryAt := 0
 glazeRect := []             ; x, y, width, height of the last window GlazeInfo found
 
-; Warm-up: the first call of the CLI is slow (cold start of the executable);
-; do it now, not on the first Win + click.
-Run GLAZE ' query app-metadata', , "Hide"
+; Connect now, not on the first Win + click; the connection is remade by itself
+; if GlazeWM restarts.
+Glaze.Connect()
+OnExit((*) => Glaze.Close())
 
-~F24:: {
-    global winHeld, queryPid, queryAt
-    if winHeld
-        return                          ; auto-repeat
-    winHeld := true
-    queryPid := PrefetchWindows()       ; know the floating windows beforehand
-    queryAt := A_TickCount
-}
+~F24:: global winHeld := true
 ~F24 up:: global winHeld := false
 
 ~F20:: {
@@ -74,8 +67,6 @@ SetTimer WatchDesktopClick, 25
 ; right edge; the preview is only a hint, GlazeWM picks the tile) or fullscreen
 ; (top edge). Anywhere else it stays
 ; floating where it was dropped.
-; Python of the yasb venv (3.14, no packages needed): runs glaze_snap.py.
-SNAP_PYTHON := "C:\Users\Mia Schionato\.config\yasb-src\.venv\Scripts\pythonw.exe"
 SNAP_EDGE := 40             ; px from the monitor edge that count as "at the edge"
 SNAP_MIN_TRAVEL := 150      ; px the cursor must have moved: a press that starts
                             ; at an edge must not snap on its own
@@ -142,8 +133,6 @@ SnapPreview(zone) {
 }
 
 ; The button went up: take the preview away and, in a zone, snap the window.
-; glaze_snap.py does it over GlazeWM's own socket, all the commands back to back
-; (one CLI process per command left the tile in the wrong place for a moment).
 SnapFinish(hwnd, zone) {
     global snapGui, snapKind
     if snapGui {
@@ -151,9 +140,58 @@ SnapFinish(hwnd, zone) {
         snapGui := ""
     }
     snapKind := ""
-    if !zone
+    if zone
+        GlazeSnap(hwnd, zone.kind)
+}
+
+; Snap over the socket, the commands back to back (a process per command left the
+; tile on the wrong side for a moment):
+;   top            set-fullscreen
+;   left / right   set-tiling, then, if the window landed on the wrong side of the
+;                  other tiles of its monitor, the `move --direction` swaps that
+;                  put it on the side asked (one per tile it has to pass).
+; GlazeWM puts a window back in tiling at its old slot (or beside the last focused
+; tile), not where it was dropped, hence the swaps. Alone on its monitor there is
+; no side, and a move would only send it to the next monitor: nothing is done.
+GlazeSnap(hwnd, kind) {
+    Sleep 40                                ; GlazeWM takes in where the drag ended
+    id := GlazeInfo(hwnd, &state)
+    if !id
         return
-    Run '"' SNAP_PYTHON '" "' A_ScriptDir '\glaze_snap.py" ' hwnd ' ' zone.kind, , "Hide"
+    if (kind = "top") {
+        Glaze.Send("command --id " id " set-fullscreen")
+        return
+    }
+    Glaze.Send("command --id " id " set-tiling")
+    json := Glaze.Ask("query monitors")     ; the answer comes after the set-tiling
+    for monitor in StrSplit(json, '{"type":"monitor"') {
+        mineCentre := ""
+        others := []
+        for chunk in StrSplit(monitor, '{"type":"window"') {
+            if !RegExMatch(chunk, '"handle":(\d+)', &mh)
+                continue
+            if !RegExMatch(chunk, '"state":\{"type":"(\w+)"', &ms) || ms[1] != "tiling"
+                continue
+            if !InStr(chunk, '"displayState":"shown"')
+                continue                    ; a window on a workspace that is not on screen
+            if !RegExMatch(chunk, '"width":(-?\d+),"height":-?\d+,"x":(-?\d+),"y":', &mg)
+                continue
+            centre := Integer(mg[2]) + Integer(mg[1]) / 2
+            if (mh[1] = hwnd)
+                mineCentre := centre
+            else
+                others.Push(centre)
+        }
+        if (mineCentre = "")
+            continue
+        passes := 0
+        for centre in others
+            if (kind = "left" ? centre < mineCentre : centre > mineCentre)
+                passes++
+        Loop passes
+            Glaze.Send("command --id " id " move --direction " kind)
+        return
+    }
 }
 
 WatchDesktopClick() {
@@ -191,21 +229,17 @@ FocusMonitorOfEmptyClick() {
     for l in lefts
         if (l < pos)
             index++
-    Run GLAZE ' command focus --monitor ' index, , "Hide"
+    Glaze.Send("command focus --monitor " index)
 }
 
 DragOrToggle() {
-    global lastClick, winHeld, queryPid, queryAt
+    global lastClick, winHeld
     winHeld := true
     CoordMode "Mouse", "Screen"
     SetWinDelay -1
     MouseGetPos &mx0, &my0, &hwnd
     if !CanMove(hwnd)
         return
-    if (!queryPid || A_TickCount - queryAt > 10000) {
-        queryPid := PrefetchWindows()
-        queryAt := A_TickCount
-    }
     try WinActivate "ahk_id " hwnd          ; focus and raise it
     DllCall("winmm\timeBeginPeriod", "UInt", 1)
     started := false
@@ -221,8 +255,7 @@ DragOrToggle() {
             }
             started := true
             ReadSnapMonitors()
-            FloatIfTiled(hwnd, queryPid)
-            queryPid := 0
+            FloatIfTiled(hwnd)
             RestoreIfMaximized(hwnd, mx0, my0)
             WinGetPos &wx, &wy, , , "ahk_id " hwnd
             dx := wx - mx0
@@ -252,10 +285,9 @@ DragOrToggle() {
     ; Pressed and released without moving: a click. Two close ones toggle.
     if (A_TickCount - lastClick < DOUBLE_CLICK_MS) {
         lastClick := 0
-        queryPid := 0
-        id := GlazeInfo(hwnd, &state, PrefetchWindows())
+        id := GlazeInfo(hwnd, &state)
         if id
-            Run GLAZE ' command --id ' id ' toggle-floating', , "Hide"
+            Glaze.Send("command --id " id " toggle-floating")
     } else {
         lastClick := A_TickCount
     }
@@ -295,7 +327,7 @@ ResizeWindow() {
         return                              ; maximized: nothing to resize
 
     try WinActivate "ahk_id " hwnd
-    FloatIfTiled(hwnd, PrefetchWindows())
+    FloatIfTiled(hwnd)
     WinGetPos &wx, &wy, &ww, &wh, "ahk_id " hwnd
     left := (mx < wx + ww // 2)             ; the quadrant the drag began in
     top := (my < wy + wh // 2)
@@ -328,7 +360,7 @@ ResizeWindow() {
 MinimizeWindow(hwnd) {
     id := GlazeInfo(hwnd, &state)
     if id
-        Run GLAZE ' command --id ' id ' set-minimized', , "Hide"
+        Glaze.Send("command --id " id " set-minimized")
     else
         try WinMinimize "ahk_id " hwnd
 }
@@ -341,7 +373,7 @@ CloseWindowUnderCursor() {
         return
     id := GlazeInfo(hwnd, &state)
     if id
-        Run GLAZE ' command --id ' id ' close', , "Hide"
+        Glaze.Send("command --id " id " close")
     else
         try WinClose "ahk_id " hwnd
 }
@@ -368,40 +400,25 @@ RestoreIfMaximized(hwnd, mx, my) {
 ; is DPI-aware for the system scale, and on a monitor with another scale (the
 ; right one) its coordinates are not GlazeWM's, so the window used to land a
 ; hundred pixels from where it was grabbed.
-FloatIfTiled(hwnd, queryPid := 0) {
+FloatIfTiled(hwnd) {
     global glazeRect
-    id := GlazeInfo(hwnd, &state, queryPid)
+    id := GlazeInfo(hwnd, &state)
     if (!id || state != "tiling")
         return
+    ; Waits for the answer: the window has to be floating before it is moved.
     if (glazeRect.Length = 4)
-        RunWait GLAZE ' command --id ' id ' set-floating --centered=false --x-pos ' glazeRect[1]
-            . ' --y-pos ' glazeRect[2] ' --width ' glazeRect[3] ' --height ' glazeRect[4], , "Hide"
+        Glaze.Ask("command --id " id " set-floating --centered=false --x-pos " glazeRect[1]
+            . " --y-pos " glazeRect[2] " --width " glazeRect[3] " --height " glazeRect[4])
     else
-        RunWait GLAZE ' command --id ' id ' set-floating --centered=false', , "Hide"
-}
-
-; Starts `glazewm query windows` in the background, into a temp file; returns
-; the PID to wait on.
-PrefetchWindows() {
-    tmp := A_Temp "\glazewm-windows.json"
-    try FileDelete tmp
-    ; cmd /c strips the outer quotes of the line, so the quoted exe path and the
-    ; quoted redirect target both need one more pair around everything.
-    Run A_ComSpec ' /c "' GLAZE ' query windows > "' tmp '""', , "Hide", &pid
-    return pid
+        Glaze.Ask("command --id " id " set-floating --centered=false")
 }
 
 ; GlazeWM's container id of a window (its handle is the hwnd) and its state
 ; type (tiling / floating / minimized / fullscreen). "" when GlazeWM does not
-; manage it. Waits for the query only if it has not finished.
-GlazeInfo(hwnd, &state, queryPid := 0) {
+; manage it.
+GlazeInfo(hwnd, &state) {
     global glazeRect
-    tmp := A_Temp "\glazewm-windows.json"
-    if !queryPid
-        queryPid := PrefetchWindows()
-    ProcessWaitClose queryPid, 2
-    json := ""
-    try json := FileRead(tmp)
+    json := Glaze.Ask("query windows")
     state := ""
     for chunk in StrSplit(json, '{"type":"window"') {
         if !RegExMatch(chunk, '"handle":' hwnd '[,}]')
