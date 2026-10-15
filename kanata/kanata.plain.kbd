@@ -179,7 +179,7 @@
   ;; Win+W closes the window with Alt+F4 straight from kanata (Mia, 2026-10-07):
   ;; closing through the WM failed on windows it does not manage (floating
   ;; Adobe apps). cmd_zen still sends Ctrl+W, closing a tab in Zen.
-  w-cls A-f4
+  w-cls (macro F22) ;; Win+W: windows.ahk decides (Ctrl+W in Zen / Premiere / Filmcraft, else Alt+F4)
   ;; Win+Tab as macOS Cmd+Tab (Mia, 2026-10-08): the first Tab presses Alt
   ;; and keeps it down while Win is held, so each Tab steps through Windows'
   ;; Alt+Tab switcher and releasing Win picks the window, no Enter. It was

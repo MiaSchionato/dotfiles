@@ -20,6 +20,9 @@
 #SingleInstance Force
 #Include glaze_ipc.ahk          ; GlazeWM's socket (no CLI process, no helper script)
 #Include glaze_workspaces.ahk   ; F13-F17: workspace shortcuts with logic (kanata sends them)
+#Include win_w.ahk              ; F22: Win + W (Ctrl+W in Zen / Premiere / Filmcraft, else Alt+F4)
+
+F22:: CloseOrCtrlW(WinGetProcessName("A"))
 
 DOUBLE_CLICK_MS := 350      ; two clicks closer than this are a double click
 DRAG_THRESHOLD := 3         ; px before a press counts as a drag: a hand always
