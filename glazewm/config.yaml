@@ -130,6 +130,13 @@ window_rules:
   - commands: ['move --workspace WhatsApp']
     match:
       - window_process: { equals: 'WhatsApp.Root' }
+  # The Chrome app windows (YouTube) opened by the MX Creative Console macro ask for
+  # --window-position=3840,0, but GlazeWM puts a new window on the workspace of the
+  # focused container and ignores that position (Mia, 2026-10-15). Zen is the
+  # browser in use, so every Chrome window goes to the right monitor.
+  - commands: ['move --workspace right']
+    match:
+      - window_process: { equals: 'chrome' }
 
 binding_modes: []
 
