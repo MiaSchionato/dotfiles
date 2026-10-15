@@ -95,7 +95,7 @@
                () (multi (on-press press-vkey vk-mclick) (on-release release-vkey vk-mclick)) break)
 
   ;; CapsLock: Tap = Esc, Shift+Tap = Delete, Hold = caps_nav layer.
-  ;; Esc is sent directly now; the Premiere variant lives in @cap-del and
+  ;; Esc is sent directly now; the Editor variant lives in @cap-del and
   ;; komokana picks between them, so no AutoHotkey round trip.
   ;; Shift+CapsLock: a tap is still Delete, but held it is caps_nav too, so
   ;; Shift+Caps+C gives Ç (it was a plain Delete, held or not; 2026-10-08).
@@ -113,7 +113,7 @@
   ;; komokana swaps the BASE layer on focus change, so each variant is the
   ;; base layer with one alias replaced. Everything else stays identical.
 
-  ;; CapsLock inside Premiere: tap sends Delete instead of Esc. Hold and
+  ;; CapsLock inside Editor: tap sends Delete instead of Esc. Hold and
   ;; Shift+tap are unchanged.
   cap-del (fork
             (tap-hold-press 200 200 del (layer-while-held caps_nav))
@@ -143,13 +143,13 @@
                 (on-release tap-vkey vk-glance-end))
 
   ;; The same quick look for the other workspaces: CapsLock + V (Nvim; N is the
-  ;; tilde), P (Premiere), R (AfterFX), G (Scratchpad). Same keys as the Win
+  ;; tilde), P (Editor), R (Motion), G (Scratchpad). Same keys as the Win
   ;; layer, where they GO to the workspace instead of just looking.
   gl-nv (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Nvim' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Nvim }")
                 (on-release tap-vkey vk-glance-end))
-  gl-pr (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Premiere' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Premiere }")
+  gl-pr (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Editor' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Editor }")
                 (on-release tap-vkey vk-glance-end))
-  gl-af (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'AfterFX' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace AfterFX }")
+  gl-af (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Motion' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Motion }")
                 (on-release tap-vkey vk-glance-end))
   gl-sp (multi (cmd nu -c "let f = ($env.TEMP | path join 'glaze-glance-prev'); let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n != 'Scratchpad' { $n | save -f $f; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Scratchpad }")
                 (on-release tap-vkey vk-glance-end))
@@ -198,10 +198,10 @@
   ;; Win+G: go to the Scratchpad workspace, or back to the one before when already
   ;; there (nu decides: it reads GlazeWM's focused
   ;; workspace). Win+Shift+G: send the focused window there and stay.
-  m-scr (fork (macro C-A-M-g) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Scratchpad' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Scratchpad; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
-  m-desk (fork M-d (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'AfterFX' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace AfterFX; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'AfterFX' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace AfterFX }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
-  m-r (fork (macro C-A-M-a) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Resolve' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Resolve; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Resolve' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Resolve }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Resolve
-  m-p (fork (macro C-A-M-p) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Premiere' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Premiere; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Premiere' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Premiere }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Premiere
+  m-ed (fork (fork (macro F13) (macro A-F13) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Editor' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Editor; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Editor' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Editor }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+Space: Editor (Alt: pull here, Shift: move the window and follow)
+  m-mo (fork (fork (macro F14) (macro A-F14) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Motion' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Motion; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Motion' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Motion }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+M: Motion
+  m-scr (fork (fork (macro F15) (macro A-F15) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Scratchpad' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Scratchpad; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+Backspace: Scratchpad (Shift: send the window there, no follow)
+  m-desk (fork M-d (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Motion' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Motion; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Motion' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Motion }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
   m-[ (macro C-A-M-[) ;; cycle-focus
   m-] (macro C-A-M-]) 
   
@@ -216,9 +216,9 @@
   m-i (macro C-A-M-i) ;; toggle-shortcuts (?)
   m-o (fork lrld (macro S-C-A-M-o) (lsft rsft)) ;; Reload whkd and Komorebi 
 
-  m-1 (fork (macro C-A-M-1) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'left' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace left; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'left' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace left }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Workspaces
-  m-2 (fork (macro C-A-M-2) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'main' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace main; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'main' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace main }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
-  m-3 (fork (macro C-A-M-3) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'right' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace right; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'right' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace right }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
+  m-1 (fork (macro C-A-M-1) (macro C-F13) (lsft rsft)) ;; focus monitor 1 (Shift: send this workspace to it)
+  m-2 (fork (macro C-A-M-2) (macro C-F14) (lsft rsft)) ;; focus monitor 2 (Shift: send this workspace to it)
+  m-3 (fork (macro C-A-M-3) (macro C-F15) (lsft rsft)) ;; focus monitor 3 (Shift: send this workspace to it)
   m-4 (macro C-A-M-4)
   m-5 (macro C-A-M-5)
   m-6 (macro C-A-M-6)
@@ -229,9 +229,8 @@
 
 
   m-term (cmd "C:\Program Files\WezTerm\wezterm-gui.exe") ;; terminal
-  m-b (fork (cmd nu -c "let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n == 'Browser' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --recent-workspace } else { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Browser ; if (ps | where name == 'zen.exe' | is-empty) { start `C:\Program Files\Zen Browser\zen.exe` } }") (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Browser' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Browser; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Browser' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Browser }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Browser
-  m-n (fork (cmd nu -c "let n = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $n == 'Nvim' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --recent-workspace } else { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Nvim ; if (ps | where name == 'nvim-wezterm.exe' | is-empty) { ^`C:\Windows\System32\cmd.exe` /c start '' `C:\Program Files\WezTerm\nvim-wezterm.exe` start -- wsl --cd ~ -e fish -c nvim } }") (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Nvim' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Nvim; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Nvim' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Nvim }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Nvim
-  m-m (macro C-A-M-m) ;; Motion (After effects)
+  m-b (fork (fork (macro F16) (macro A-F16) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Browser' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Browser; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Browser' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Browser }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
+  m-n (fork (fork (macro F17) (macro A-F17) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Nvim' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Nvim; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Nvim' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Nvim }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft))
 
   m-, (fork (macro C-A-M-,) (cmd nu -c "let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace-in-direction left; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace-in-direction left; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating }") (lsft rsft))
   m-. (fork (macro C-A-M-.) (cmd nu -c "let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace-in-direction right; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace-in-direction right; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating }") (lsft rsft))
@@ -306,7 +305,7 @@
 )
 
 ;; ----------------------------------------------------------------------------
-;; Premiere (komokana: Adobe Premiere Pro.exe) - CapsLock tap = Delete
+;; Editor (komokana: Adobe Editor Pro.exe) - CapsLock tap = Delete
 ;; ----------------------------------------------------------------------------
 (deflayer premiere
   grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
@@ -369,11 +368,11 @@
 ;; kanata was started with: kanata.cmd.kbd (the vim-like modes, default)
 ;; and kanata.plain.kbd (without them). Mia, 2026-10-08.
 (deflayer cmd_layer
-  lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
- @w-tab @m-q   @w-cls @expl @m-r C-t  _    _  @m-i @m-o @m-p   @m-[  @m-]    _
-  _     C-a   @c-save @m-desk @m-f  @m-scr @m-h @m-j @m-k @m-l _    _    @m-term
-  _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
-  _      _    _               A-spc           _    _    _
+  lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    @m-scr
+ @w-tab @m-q   @w-cls @expl _    C-t  _    _  @m-i @m-o _      @m-[  @m-]    _
+  _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-mo  @m-,  @m-.  _    _
+  _      _    _               @m-ed           _    _    _
   @win-lclick
   @win-rclick
   @win-mclick
@@ -383,11 +382,11 @@
 ;; Command Layer, Zen variant - only W differs: Ctrl+W instead of closing
 ;; ----------------------------------------------------------------------------
 (deflayer cmd_zen
-  lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    _
- @w-tab @m-q   C-w    @expl @m-r C-t  _    _  @m-i @m-o @m-p   @m-[  @m-]    _
-  _     C-a   @c-save @m-desk @m-f  @m-scr @m-h @m-j @m-k @m-l _    _    @m-term
-  _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-m  @m-,  @m-.  _    _
-  _      _    _               A-spc           _    _    _
+  lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    @m-scr
+ @w-tab @m-q   C-w    @expl _    C-t  _    _  @m-i @m-o _      @m-[  @m-]    _
+  _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
+  _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-mo  @m-,  @m-.  _    _
+  _      _    _               @m-ed           _    _    _
   @win-lclick
   @win-rclick
   @win-mclick

@@ -19,6 +19,7 @@
 #HotIf
 #SingleInstance Force
 #Include glaze_ipc.ahk          ; GlazeWM's socket (no CLI process, no helper script)
+#Include glaze_workspaces.ahk   ; F13-F17: workspace shortcuts with logic (kanata sends them)
 
 DOUBLE_CLICK_MS := 350      ; two clicks closer than this are a double click
 DRAG_THRESHOLD := 3         ; px before a press counts as a drag: a hand always
