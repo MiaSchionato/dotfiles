@@ -63,7 +63,10 @@ Run GLAZE ' query app-metadata', , "Hide"
 ; A click on the bare desktop (an empty workspace has no window to click) focuses
 ; that monitor in GlazeWM, so the next app opens there: GlazeWM puts a new window
 ; on the workspace of the focused container, not where the pointer is.
-~LButton:: FocusMonitorOfEmptyClick()
+; Polled (every 25 ms) instead of a ~LButton hotkey: a hotkey on a mouse button
+; installs AutoHotkey's mouse hook, which adds lag to every pointer movement (the
+; "delay while dragging" Mia noticed right after this was added).
+SetTimer WatchDesktopClick, 25
 
 
 ; Snap, like Windows': drag a window with Win + left button to a screen edge and
@@ -71,23 +74,27 @@ Run GLAZE ' query app-metadata', , "Hide"
 ; right edge; the preview is only a hint, GlazeWM picks the tile) or fullscreen
 ; (top edge). Anywhere else it stays
 ; floating where it was dropped.
+; Python of the yasb venv (3.14, no packages needed): runs glaze_snap.py.
+SNAP_PYTHON := "C:\Users\Mia Schionato\.config\yasb-src\.venv\Scripts\pythonw.exe"
 SNAP_EDGE := 40             ; px from the monitor edge that count as "at the edge"
 SNAP_MIN_TRAVEL := 150      ; px the cursor must have moved: a press that starts
                             ; at an edge must not snap on its own
 snapGui := ""
 snapKind := ""
+snapMonitors := []
 
 ; The zone under the cursor: {kind: "left" | "right" | "top", x, y, w, h, left,
 ; right} (the preview rectangle in the monitor's work area, and the monitor's
 ; left and right edges), or "" for none.
 SnapZoneAt(mx, my, mx0, my0) {
+    global snapMonitors
     if (Abs(mx - mx0) < SNAP_MIN_TRAVEL && Abs(my - my0) < SNAP_MIN_TRAVEL)
         return ""
-    Loop MonitorGetCount() {
-        MonitorGet A_Index, &l, &t, &r, &b
+    for m in snapMonitors {
+        l := m[1], t := m[2], r := m[3], b := m[4]
         if (mx < l || mx >= r || my < t || my >= b)
             continue
-        MonitorGetWorkArea A_Index, &wl, &wt, &wr, &wb
+        wl := m[5], wt := m[6], wr := m[7], wb := m[8]
         half := (wr - wl) // 2
         if (my - t < SNAP_EDGE)
             return {kind: "top", x: wl, y: wt, w: wr - wl, h: wb - wt}
@@ -98,6 +105,18 @@ SnapZoneAt(mx, my, mx0, my0) {
         return ""
     }
     return ""
+}
+
+; The monitors' rectangles and work areas, read once when a drag starts (the calls
+; walk the monitors every time, too slow for each frame).
+ReadSnapMonitors() {
+    global snapMonitors
+    snapMonitors := []
+    Loop MonitorGetCount() {
+        MonitorGet A_Index, &l, &t, &r, &b
+        MonitorGetWorkArea A_Index, &wl, &wt, &wr, &wb
+        snapMonitors.Push([l, t, r, b, wl, wt, wr, wb])
+    }
 }
 
 ; Shows (or moves, or hides) the preview: a click-through blue rectangle.
@@ -123,6 +142,8 @@ SnapPreview(zone) {
 }
 
 ; The button went up: take the preview away and, in a zone, snap the window.
+; glaze_snap.py does it over GlazeWM's own socket, all the commands back to back
+; (one CLI process per command left the tile in the wrong place for a moment).
 SnapFinish(hwnd, zone) {
     global snapGui, snapKind
     if snapGui {
@@ -132,60 +153,16 @@ SnapFinish(hwnd, zone) {
     snapKind := ""
     if !zone
         return
-    Sleep 150                               ; let GlazeWM take in where the drag ended
-    id := GlazeInfo(hwnd, &state, PrefetchWindows())
-    if !id
-        return
-    if (zone.kind = "top") {
-        Run GLAZE ' command --id ' id ' set-fullscreen', , "Hide"
-        return
-    }
-    RunWait GLAZE ' command --id ' id ' set-tiling', , "Hide"
-    Sleep 250
-    PutOnSide(hwnd, zone)
+    Run '"' SNAP_PYTHON '" "' A_ScriptDir '\glaze_snap.py" ' hwnd ' ' zone.kind, , "Hide"
 }
 
-; set-tiling puts the window beside the focused one, whichever side that is. Where
-; the window ended up on the wrong side of the others tiled on its monitor, one
-; `move --direction` swaps it. Alone on the monitor there is no side, and a move
-; would only send it to the next monitor, so then nothing is done. The monitor
-; comes from GlazeWM's own tree (`query monitors`): this script's coordinates are
-; not GlazeWM's on a monitor with another DPI scale.
-PutOnSide(hwnd, zone) {
-    tmp := A_Temp "\glazewm-monitors.json"
-    try FileDelete tmp
-    RunWait A_ComSpec ' /c "' GLAZE ' query monitors > "' tmp '""', , "Hide"
-    json := ""
-    try json := FileRead(tmp)
-    for monitor in StrSplit(json, '{"type":"monitor"') {
-        mineId := "", mineX := ""
-        others := []
-        for chunk in StrSplit(monitor, '{"type":"window"') {
-            if !RegExMatch(chunk, '"handle":(\d+)', &mh)
-                continue
-            if !RegExMatch(chunk, '"state":\{"type":"(\w+)"', &ms) || ms[1] != "tiling"
-                continue
-            if !InStr(chunk, '"displayState":"shown"')
-                continue                    ; a window on a workspace that is not on screen
-            if !RegExMatch(chunk, '"width":-?\d+,"height":-?\d+,"x":(-?\d+),"y":', &mg)
-                continue
-            if (mh[1] = hwnd) {
-                RegExMatch(chunk, '"id":"([^"]+)"', &mi)
-                mineId := mi[1]
-                mineX := Integer(mg[1])
-            } else
-                others.Push(Integer(mg[1]))
-        }
-        if (mineId = "")
-            continue
-        wrong := false
-        for x in others
-            if (zone.kind = "left" ? mineX > x : mineX < x)
-                wrong := true
-        if wrong
-            Run GLAZE ' command --id ' mineId ' move --direction ' zone.kind, , "Hide"
-        return
-    }
+WatchDesktopClick() {
+    static wasDown := false
+    down := GetKeyState("LButton", "P")
+    pressed := down && !wasDown
+    wasDown := down
+    if pressed
+        FocusMonitorOfEmptyClick()
 }
 
 FocusMonitorOfEmptyClick() {
@@ -233,6 +210,7 @@ DragOrToggle() {
     DllCall("winmm\timeBeginPeriod", "UInt", 1)
     started := false
     lastX := lastY := ""
+    snapX := snapY := ""
     began := A_TickCount
     while winHeld && lHeld {
         MouseGetPos &mx, &my
@@ -242,6 +220,7 @@ DragOrToggle() {
                 continue
             }
             started := true
+            ReadSnapMonitors()
             FloatIfTiled(hwnd, queryPid)
             queryPid := 0
             RestoreIfMaximized(hwnd, mx0, my0)
@@ -254,8 +233,10 @@ DragOrToggle() {
                 break                       ; the window closed mid-drag
             lastX := mx, lastY := my
         }
-        if started
+        if (started && (mx != snapX || my != snapY)) {
+            snapX := mx, snapY := my
             SnapPreview(SnapZoneAt(mx, my, mx0, my0))
+        }
         if (A_TickCount - began > 30000)
             break                           ; safety brake
         ; One move per composed frame (DWM ticks at the fastest monitor, 240 Hz
