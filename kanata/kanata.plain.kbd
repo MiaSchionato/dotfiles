@@ -201,6 +201,7 @@
   ;; Ctrl + . opens Windows' emoji panel (Win + . is the workspace to the right in the Win layer,
   ;; and Win + V is paste, so the real Win shortcuts are out of reach). Base and Zen layers only.
   emoji (fork . (macro M-.) (lctl rctl))
+  m-p (fork (fork (macro F18) (macro A-F18) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Photo' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Photo; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Photo' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Photo }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+P: Photo
   m-ed (fork (fork (macro F13) (macro A-F13) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Editor' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Editor; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Editor' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Editor }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+Space: Editor (Alt: pull here, Shift: move the window and follow)
   m-mo (fork (fork (macro F14) (macro A-F14) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Motion' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Motion; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Motion' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Motion }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+M: Motion
   m-scr (fork (fork (macro F15) (macro A-F15) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Scratchpad' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Scratchpad; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+Backspace: Scratchpad (Shift: send the window there, no follow)
@@ -372,7 +373,7 @@
 ;; and kanata.plain.kbd (without them). Mia, 2026-10-08.
 (deflayer cmd_layer
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    @m-scr
- @w-tab @m-q   @w-cls @expl _    C-t  _    _  @m-i @m-o _      @m-[  @m-]    _
+ @w-tab @m-q   @w-cls @expl _    C-t  _    _  @m-i @m-o @m-p      @m-[  @m-]    _
   _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-mo  @m-,  @m-.  _    _
   _      _    _               @m-ed           _    _    _
@@ -386,7 +387,7 @@
 ;; ----------------------------------------------------------------------------
 (deflayer cmd_zen
   lrld-next @m-1 @m-2 @m-3  @m-4  @m-5  @m-6  @m-7  @m-8  @m-9  @m-0  _    _    @m-scr
- @w-tab @m-q   C-w    @expl _    C-t  _    _  @m-i @m-o _      @m-[  @m-]    _
+ @w-tab @m-q   C-w    @expl _    C-t  _    _  @m-i @m-o @m-p      @m-[  @m-]    _
   _     C-a   @c-save @m-desk @m-f  _    @m-h @m-j @m-k @m-l _    _    @m-term
   _      @undo C-x  @c-cpy C-v @m-b  @m-n  @m-mo  @m-,  @m-.  _    _
   _      _    _               @m-ed           _    _    _

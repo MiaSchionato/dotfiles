@@ -73,7 +73,8 @@ window_behavior:
 # bind_to_monitor: 0 is the leftmost screen (left, centre, right). A workspace
 # WITHOUT it opens on the monitor in focus (like a scratchpad: focus a monitor, call
 # the workspace, it shows up there). left / main / right are the home screens; Editor
-# (every video editor) and Motion (every motion app) are tied to the centre.
+# (every video editor), Motion (every motion app) and Photo (Photoshop, Affinity...)
+# are tied to the centre.
 workspaces:
   - name: 'left'
     bind_to_monitor: 0
@@ -82,6 +83,8 @@ workspaces:
   - name: 'Editor'
     bind_to_monitor: 1
   - name: 'Motion'
+    bind_to_monitor: 1
+  - name: 'Photo'
     bind_to_monitor: 1
   - name: 'Nvim'
   - name: 'Browser'
@@ -104,6 +107,12 @@ window_rules:
       - window_class: { equals: 'CabinetWClass' }
       - window_process: { equals: 'Adobe Premiere Pro' }
       - window_process: { equals: 'Resolve' }
+      - window_process: { equals: 'filmcraft' }
+      - window_process: { equals: 'effectcraft' }
+      - window_process: { equals: 'Cavalry' }
+      - window_process: { equals: 'Photoshop' }
+      - window_process: { equals: 'Affinity' }
+      - window_process: { equals: 'photocraft' }
       - window_process: { equals: 'AfterFX' }
       - window_class: { equals: 'AE_CApplication' }
       - window_process: { equals: 'Epidemic Sound' }
@@ -117,12 +126,20 @@ window_rules:
   - commands: ['move --workspace Motion']
     match:
       - window_process: { equals: 'AfterFX' }
+      - window_process: { equals: 'effectcraft' }
+      - window_process: { equals: 'Cavalry' }
   - commands: ['move --workspace Editor']
     match:
       - window_process: { equals: 'Adobe Premiere Pro' }
   - commands: ['move --workspace Editor']
     match:
       - window_process: { equals: 'Resolve' }
+      - window_process: { equals: 'filmcraft' }
+  - commands: ['move --workspace Photo']
+    match:
+      - window_process: { equals: 'Photoshop' }
+      - window_process: { equals: 'Affinity' }
+      - window_process: { equals: 'photocraft' }
   - commands: ['move --workspace Browser']
     match:
       - window_process: { equals: 'zen' }

@@ -8,6 +8,7 @@
 ;    F15  Win + Backspace    go to Scratchpad; again: back
 ;    F16  Win + B            go to Browser (opens Zen if it is not running); again: back
 ;    F17  Win + N            go to Nvim (opens it if it is not running); again: back
+;    F18  Win + P            go to Photo (Photoshop, Affinity, Photocraft); again: back
 ;    Alt  + F13..F17         PULL the workspace to the monitor in focus (Win + Alt + key):
 ;                            F13 Editor, F14 Motion, F15 Scratchpad, F16 Browser, F17 Nvim
 ;    Ctrl + F13..F15         send the workspace in focus to monitor 1 / 2 / 3, left to
@@ -23,6 +24,8 @@ F13:: GoWorkspace("Editor")
 F14:: GoWorkspace("Motion")
 F15:: GoWorkspace("Scratchpad")
 F16:: GoWorkspace("Browser", "zen.exe", '"C:\Program Files\Zen Browser\zen.exe"')
+F18:: GoWorkspace("Photo")
+!F18:: PullWorkspace("Photo")
 F17:: GoWorkspace("Nvim", "nvim-wezterm.exe", '"C:\Program Files\WezTerm\nvim-wezterm.exe" start -- wsl --cd ~ -e fish -c nvim')
 !F13:: PullWorkspace("Editor")
 !F14:: PullWorkspace("Motion")
