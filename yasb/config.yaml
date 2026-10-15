@@ -97,6 +97,9 @@ widgets:
     options:
       class_name: "workspace-badge"
       show_unfocused: true
+      # main and Motion would both be M: main is H (home).
+      labels:
+        main: "H"
 
   glazewm_workspaces:
     type: "glazewm.workspaces.GlazewmWorkspacesWidget"

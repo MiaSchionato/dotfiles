@@ -198,6 +198,9 @@
   ;; Win+G: go to the Scratchpad workspace, or back to the one before when already
   ;; there (nu decides: it reads GlazeWM's focused
   ;; workspace). Win+Shift+G: send the focused window there and stay.
+  ;; Ctrl + . opens Windows' emoji panel (Win + . is the workspace to the right in the Win layer,
+  ;; and Win + V is paste, so the real Win shortcuts are out of reach). Base and Zen layers only.
+  emoji (fork . (macro M-.) (lctl rctl))
   m-ed (fork (fork (macro F13) (macro A-F13) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Editor' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Editor; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Editor' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Editor }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+Space: Editor (Alt: pull here, Shift: move the window and follow)
   m-mo (fork (fork (macro F14) (macro A-F14) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Motion' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Motion; if (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first) != 'Motion' { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command focus --workspace Motion }; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+M: Motion
   m-scr (fork (fork (macro F15) (macro A-F15) (lalt ralt)) (cmd nu -c "let cur = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query workspaces | from json | get data.workspaces | where hasFocus | get name | first); if $cur != 'Scratchpad' { let w = (^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` query focused | from json | get data.focused); let fl = (($w.state? | default {type: 'none'}).type == 'floating'); if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-tiling }; ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command move --workspace Scratchpad; if $fl { ^`C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe` command --id $w.id set-floating } }") (lsft rsft)) ;; Win+Backspace: Scratchpad (Shift: send the window there, no follow)
@@ -297,7 +300,7 @@
   grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
   @cap a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lsft z    x    c    v    b    n    m    ,    @emoji    /    rsft
   @ctl @win @alt          spc            ralt rmet rctl
   _
   _
@@ -325,7 +328,7 @@
   grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
   @cap a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lsft z    x    c    v    b    n    m    ,    @emoji    /    rsft
   @ctl @win-zen @alt          spc            ralt rmet rctl
   _
   _

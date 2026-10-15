@@ -67,7 +67,8 @@ class GlazewmBadgeWidget(BaseWidget):
             self._label.setVisible(False)
             return
         focused = shown.focus
-        self._label.setText(self._initial(shown.display_name or shown.name))
+        name = shown.display_name or shown.name
+        self._label.setText(self.config.labels.get(shown.name) or self._initial(name))
         if focused != self._focused or not self._label.property("state"):
             self._focused = focused
             self._label.setProperty("class", "label focused" if focused else "label")
