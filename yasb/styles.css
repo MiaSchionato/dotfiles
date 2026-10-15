@@ -110,6 +110,24 @@ QToolTip,
   padding: 0 2px;
 }
 
+/* The workspace badge: the vim mode badge's shape in the ethereal palette.
+   Dim on the monitors you are not on, bright on the focused one. */
+.glazewm-badge { background-color: transparent; padding: 0; margin: 0 6px 0 0; }
+.glazewm-badge .label {
+  background-color: #6d7db6;
+  color: #060B1E;
+  font-weight: bold;
+  border-radius: 9px;
+  min-width: 18px;
+  max-width: 18px;
+  min-height: 18px;
+  max-height: 18px;
+  padding: 0;
+  margin: 4px 0;
+  qproperty-alignment: AlignCenter;
+}
+.glazewm-badge .label.focused { background-color: #7d82d9; }
+
 /* Todoist: the next task with a time; beige once its time has come. */
 .todoist .label { color: #7d82d9; padding: 0 6px; }
 .todoist .label.due { color: #E9BB4F; }

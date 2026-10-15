@@ -32,7 +32,7 @@ bars:
       bottom: 2
       right: 10
     widgets:
-      left: ["glazewm_workspaces", "media"]
+      left: ["workspace_badge", "media"]
       center: ["clock"]
       right: ["todoist", "systray", "memory", "cpu", "notifications"]
 
@@ -89,6 +89,14 @@ widgets:
       # Played when a card opens on its own ("" = silent). Mia, 2026-10-09:
       # the calendar chime was too quiet, an alarm instead.
       sound: 'C:\Windows\Media\Alarm05.wav'
+
+  # The workspace as one letter in a round badge (Mia, 2026-10-15), the look of the
+  # vim mode badge. The dots below (glazewm_workspaces) are kept, off the bar.
+  workspace_badge:
+    type: "yasb.glazewm_badge.GlazewmBadgeWidget"
+    options:
+      class_name: "workspace-badge"
+      show_unfocused: true
 
   glazewm_workspaces:
     type: "glazewm.workspaces.GlazewmWorkspacesWidget"

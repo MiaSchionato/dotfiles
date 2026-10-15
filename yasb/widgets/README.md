@@ -11,6 +11,8 @@ that branch adds:
 | `kanata_mode_schema.py` | `validation/widgets/yasb/kanata_mode.py` |
 | `kanata_hints.py` | `widgets/services/kanata/hints.py` |
 | `kanata_app_layers.py` | `widgets/services/kanata/app_layers.py` |
+| `glazewm_badge.py` | `widgets/yasb/glazewm_badge.py` |
+| `glazewm_badge_schema.py` | `validation/widgets/yasb/glazewm_badge.py` |
 | `todoist_reminders.py` | `widgets/yasb/todoist_reminders.py` |
 | `todoist_reminders_schema.py` | `validation/widgets/yasb/todoist_reminders.py` |
 
@@ -21,6 +23,8 @@ that branch adds:
   - `app_layers`: kanata's base layer by the app in focus (Premiere and After
     Effects: CapsLock tap = Delete; Zen: Win+W closes a tab), in place of
     komokana.
+- `glazewm_badge`: the GlazeWM workspace of each monitor as one letter in a round
+  badge (the look of the vim mode badge); the focused one brighter.
 - `todoist_reminders`: the next Todoist task with a time today, in the bar; a
   card with Done, +10 min and Close, and an alarm, when its time comes. The
   token is Neovim's (`%LOCALAPPDATA%\nvim-data\todoist_token`).
