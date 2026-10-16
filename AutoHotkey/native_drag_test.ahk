@@ -2,8 +2,11 @@
 ;  EXPERIMENT (2026-10-16): let Windows move the window, GlazeWM does the rest.
 ;
 ;  Ctrl + Win + left button, held on any part of a window, drags it as if it
-;  were held by its title bar: the script only tells the window "the caption was
-;  clicked" (WM_NCLBUTTONDOWN / HTCAPTION), so Windows runs its own move loop and
+;  were held by its title bar. kanata swallows the click while Win is held and
+;  sends F20 instead (held while the button is), so there is no real button for
+;  Windows to track: this script presses the left button itself (a simulated
+;  one), then tells the window "the caption was clicked" (WM_NCLBUTTONDOWN /
+;  HTCAPTION), so Windows runs its own move loop and
 ;  GlazeWM sees the same events as with a real title-bar drag (a tiled window
 ;  dropped on another one swaps/inserts there). Nothing else in windows.ahk is
 ;  touched: this file runs on its own, the Win + drag of windows.ahk is unchanged.
@@ -13,11 +16,12 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 SendMode "Event"
+CoordMode "Mouse", "Screen"
 
 ; The desktop and the taskbar are not windows to move.
 IGNORED_CLASSES := Map("Progman", 1, "WorkerW", 1, "Shell_TrayWnd", 1, "Shell_SecondaryTrayWnd", 1)
 
-^#LButton:: NativeDrag()
+^F20:: NativeDrag()     ; Ctrl + Win + left click, as kanata sends it
 
 NativeDrag() {
     MouseGetPos &x, &y, &hover
@@ -28,6 +32,8 @@ NativeDrag() {
         return
     lParam := (y << 16) | (x & 0xFFFF)                                ; screen coordinates
     DllCall("SetForegroundWindow", "Ptr", top)
+    Click "Down"                                                      ; the button Windows' move loop follows
     PostMessage 0xA1, 2, lParam, , "ahk_id " top                      ; WM_NCLBUTTONDOWN, HTCAPTION
-    KeyWait "LButton"
+    KeyWait "F20"                                                     ; kanata holds F20 while the button is down
+    Click "Up"
 }
