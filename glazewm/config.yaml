@@ -95,11 +95,6 @@ workspaces:
     bind_to_monitor: 2
 
 window_rules:
-  # Zebar (GlazeWM's own bar, installed with it) is not used: yasb is the bar.
-  - commands: ['ignore']
-    match:
-      - window_process: { equals: 'zebar' }
-
   # floating_applications of the old komorebi.json
   - commands: ['set-floating']
     match:
